@@ -7,6 +7,7 @@ import PolicyAnalyzer from '@/components/PolicyAnalyzer';
 import InsuranceRecommender from '@/components/InsuranceRecommender';
 import ChatAssistant from '@/components/ChatAssistant';
 import Testimonials from '@/components/Testimonials';
+import AITools from '@/components/AITools';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -23,6 +24,7 @@ const Index = () => {
       <InsuranceRecommender />
       <PolicyAnalyzer />
       <ChatAssistant />
+      <AITools />
       <Testimonials />
       <Footer />
     </div>
