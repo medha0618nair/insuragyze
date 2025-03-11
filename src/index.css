@@ -95,26 +95,50 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-insura-cyberdark text-foreground;
   }
 
   .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+    @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-lg;
   }
   
   .neo-blur {
-    @apply backdrop-blur-lg bg-white/90 border border-white/30 shadow-md;
+    @apply backdrop-blur-lg bg-white/10 border border-white/20 shadow-md;
   }
   
   .insura-gradient-text {
-    @apply bg-gradient-to-r from-insura-blue to-insura-darkblue bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-insura-neon to-insura-purple bg-clip-text text-transparent;
   }
   
-  .insura-button {
-    @apply bg-insura-blue text-white hover:bg-insura-darkblue transition-all duration-300 rounded-lg px-6 py-3 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-1;
+  .cyber-card {
+    @apply bg-gradient-to-br from-black/70 to-gray-900/70 backdrop-blur-lg border border-insura-neon/30 shadow-lg shadow-insura-neon/20;
+  }
+
+  .cyber-button {
+    @apply bg-gradient-to-r from-insura-neon to-insura-purple text-white hover:shadow-lg hover:shadow-insura-purple/20 transition-all duration-300 rounded-lg px-6 py-3 font-medium transform hover:-translate-y-1;
   }
   
-  .insura-button-secondary {
-    @apply bg-white text-insura-blue border border-insura-blue hover:bg-insura-lightblue transition-all duration-300 rounded-lg px-6 py-3 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-1;
+  .cyber-button-outline {
+    @apply bg-transparent text-insura-neon border border-insura-neon hover:bg-insura-neon/10 transition-all duration-300 rounded-lg px-6 py-3 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-1;
+  }
+
+  .neon-text {
+    @apply text-insura-neon drop-shadow-md;
+  }
+
+  .purple-text {
+    @apply text-insura-purple drop-shadow-md;
+  }
+
+  .neon-border {
+    @apply border border-insura-neon shadow-sm shadow-insura-neon/50;
+  }
+
+  .glitch-effect:hover {
+    @apply animate-glitch;
+  }
+
+  .gradient-bg {
+    @apply bg-gradient-to-br from-insura-darkblue via-insura-purple to-insura-darkpurple bg-size-200 animate-gradient-shift;
   }
 }
