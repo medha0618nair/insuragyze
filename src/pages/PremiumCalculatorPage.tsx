@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Calculator, DollarSign, ArrowRight, Check } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
+import { convertToINR } from '@/utils/currencyUtils';
 
 const PremiumCalculatorPage = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ const PremiumCalculatorPage = () => {
     coverageAmount: number;
   } | null>(null);
   
-  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('INR');
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

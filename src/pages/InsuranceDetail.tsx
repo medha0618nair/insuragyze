@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -20,7 +19,7 @@ const InsuranceDetail = () => {
   const [showResults, setShowResults] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [recommendedPlans, setRecommendedPlans] = useState<RecommendedPlan[]>([]);
-  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('INR');
   const [exchangeRate] = useState<number>(83.5); // 1 USD = 83.5 INR (approximate)
 
   const categoryInfo = categoryId ? insuranceData[categoryId] : null;
