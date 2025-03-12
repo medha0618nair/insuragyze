@@ -57,7 +57,7 @@ const AITools = () => {
   ];
 
   return (
-    <section id="ai-tools" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-insura-cyberdark to-black">
+    <section id="ai-tools" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-insura-cyberdark">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-block px-3 py-1 rounded-full bg-insura-neon/10 text-insura-neon font-medium text-sm mb-4 border border-insura-neon/20">

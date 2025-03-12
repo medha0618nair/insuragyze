@@ -9,6 +9,11 @@ import NotFound from "./pages/NotFound";
 import InsuranceCategories from "./pages/InsuranceCategories";
 import InsuranceDetail from "./pages/InsuranceDetail";
 import SignIn from "./pages/SignIn";
+import PolicyAnalysisPage from "./pages/PolicyAnalysisPage";
+import PremiumCalculatorPage from "./pages/PremiumCalculatorPage";
+import CoverageOptimizerPage from "./pages/CoverageOptimizerPage";
+import ChatAssistantPage from "./pages/ChatAssistantPage";
+import ClaimCheckerPage from "./pages/ClaimCheckerPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +28,11 @@ const App = () => (
           <Route path="/insurance-categories" element={<InsuranceCategories />} />
           <Route path="/insurance/:categoryId" element={<InsuranceDetail />} />
           <Route path="/auth/signin" element={<SignIn />} />
+          <Route path="/tools/policy-analysis" element={<PolicyAnalysisPage />} />
+          <Route path="/tools/premium-calculator" element={<PremiumCalculatorPage />} />
+          <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
+          <Route path="/chat-assistant" element={<ChatAssistantPage />} />
+          <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
