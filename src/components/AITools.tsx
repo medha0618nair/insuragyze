@@ -11,7 +11,7 @@ const AITools = () => {
       title: "AI Policy Analysis",
       description: "Upload any insurance policy and our AI will translate complex terms into simple language",
       buttonText: "Analyze My Policy",
-      color: "bg-black/40 border-insura-neon/30",
+      color: "bg-black/60 border-insura-neon/30",
       link: "/tools/policy-analysis"
     },
     {
@@ -19,7 +19,7 @@ const AITools = () => {
       title: "Premium Calculator",
       description: "Get instant premium estimates based on your specific needs and risk profile",
       buttonText: "Calculate Premium",
-      color: "bg-black/40 border-indigo-400/30",
+      color: "bg-black/60 border-indigo-400/30",
       link: "/tools/premium-calculator"
     },
     {
@@ -27,7 +27,7 @@ const AITools = () => {
       title: "Coverage Optimizer",
       description: "Our AI finds coverage gaps and recommends optimizations to save you money",
       buttonText: "Optimize Coverage",
-      color: "bg-black/40 border-violet-400/30",
+      color: "bg-black/60 border-violet-400/30",
       link: "/tools/coverage-optimizer"
     },
     {
@@ -35,7 +35,7 @@ const AITools = () => {
       title: "InsuraBot Assistant",
       description: "Chat with our AI assistant to get instant answers to any insurance questions",
       buttonText: "Chat Now",
-      color: "bg-black/40 border-teal-400/30",
+      color: "bg-black/60 border-teal-400/30",
       link: "/chat-assistant"
     },
     {
@@ -43,7 +43,7 @@ const AITools = () => {
       title: "Claim Probability Checker",
       description: "Check the likelihood of your claim being approved before you submit it",
       buttonText: "Check My Claim",
-      color: "bg-black/40 border-emerald-400/30",
+      color: "bg-black/60 border-emerald-400/30",
       link: "/tools/claim-checker"
     },
     {
@@ -51,13 +51,13 @@ const AITools = () => {
       title: "Insurance Plan Finder",
       description: "Answer a few questions and our AI will recommend the best plans for you",
       buttonText: "Find Plans",
-      color: "bg-black/40 border-insura-purple/30",
+      color: "bg-black/60 border-insura-purple/30",
       link: "/insurance-categories"
     }
   ];
 
   return (
-    <section id="ai-tools" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-insura-cyberdark">
+    <section id="ai-tools" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-gray-900">
       <div className="container mx-auto">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-block px-3 py-1 rounded-full bg-insura-neon/10 text-insura-neon font-medium text-sm mb-4 border border-insura-neon/20">

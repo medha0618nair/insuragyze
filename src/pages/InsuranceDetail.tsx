@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Heart, Home, Car, Globe, Briefcase, Shield, User, Check, ArrowRight } from 'lucide-react';
+import { Heart, Home, Car, Globe, Briefcase, Shield, User, Check, ArrowRight, RefreshCw } from 'lucide-react';
 
 interface InsuranceCategory {
   id: string;
@@ -16,9 +16,27 @@ interface InsuranceCategory {
   commonQuestions: { question: string; answer: string }[];
 }
 
+interface RecommendedPlan {
+  id: string;
+  name: string;
+  provider: string;
+  monthlyPremium: string;
+  monthlyPremiumINR: string;
+  coverageAmount: string;
+  coverageAmountINR: string;
+  benefits: string[];
+  suitabilityScore: number;
+  description: string;
+}
+
 const InsuranceDetail = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
   const [activeForm, setActiveForm] = useState<boolean>(false);
+  const [showResults, setShowResults] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [recommendedPlans, setRecommendedPlans] = useState<RecommendedPlan[]>([]);
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const [exchangeRate] = useState<number>(83.5); // 1 USD = 83.5 INR (approximate)
 
   const insuranceData: Record<string, InsuranceCategory> = {
     health: {
@@ -284,8 +302,86 @@ const InsuranceDetail = () => {
     return null;
   }
 
+  const toggleCurrency = () => {
+    setCurrency(prev => prev === 'USD' ? 'INR' : 'USD');
+  };
+
+  const convertToINR = (usdAmount: string): string => {
+    // Remove $ symbol and convert to number
+    const amount = parseFloat(usdAmount.replace(/[$,]/g, ''));
+    if (isNaN(amount)) return usdAmount;
+    
+    // Convert to INR and format
+    const inrAmount = amount * exchangeRate;
+    return `₹${inrAmount.toLocaleString('en-IN')}`;
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate API call with a timeout
+    setTimeout(() => {
+      // Generate mock insurance plans based on selected category
+      const mockPlans: RecommendedPlan[] = [
+        {
+          id: '1',
+          name: `Premium ${categoryInfo.name} Plan`,
+          provider: 'Secure Life Insurance',
+          monthlyPremium: '$285',
+          monthlyPremiumINR: convertToINR('$285'),
+          coverageAmount: '$300,000',
+          coverageAmountINR: convertToINR('$300,000'),
+          benefits: ['Comprehensive coverage', '24/7 support', 'Fast claims processing', 'No waiting period'],
+          suitabilityScore: 95,
+          description: `Top-tier ${categoryInfo.name.toLowerCase()} plan with extensive benefits.`
+        },
+        {
+          id: '2',
+          name: `Standard ${categoryInfo.name} Plan`,
+          provider: 'SafeGuard Insurance',
+          monthlyPremium: '$195',
+          monthlyPremiumINR: convertToINR('$195'),
+          coverageAmount: '$200,000',
+          coverageAmountINR: convertToINR('$200,000'),
+          benefits: ['Essential coverage', 'Customizable options', 'Family discount available'],
+          suitabilityScore: 87,
+          description: `Well-balanced ${categoryInfo.name.toLowerCase()} protection for most needs.`
+        },
+        {
+          id: '3',
+          name: `Basic ${categoryInfo.name} Plan`,
+          provider: 'TrustWorthy Insurance',
+          monthlyPremium: '$120',
+          monthlyPremiumINR: convertToINR('$120'),
+          coverageAmount: '$100,000',
+          coverageAmountINR: convertToINR('$100,000'),
+          benefits: ['Affordable protection', 'Easy application', 'Quick approval'],
+          suitabilityScore: 75,
+          description: `Budget-friendly ${categoryInfo.name.toLowerCase()} option without compromising essential protection.`
+        },
+        {
+          id: '4',
+          name: `Family ${categoryInfo.name} Shield`,
+          provider: 'Family First Insurance',
+          monthlyPremium: '$320',
+          monthlyPremiumINR: convertToINR('$320'),
+          coverageAmount: '$350,000',
+          coverageAmountINR: convertToINR('$350,000'),
+          benefits: ['Family-wide coverage', 'Child protection included', 'Additional benefits for dependents'],
+          suitabilityScore: 83,
+          description: `Designed specifically for families needing ${categoryInfo.name.toLowerCase()} protection.`
+        }
+      ];
+
+      setRecommendedPlans(mockPlans);
+      setIsLoading(false);
+      setShowResults(true);
+    }, 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-insura-cyberdark to-black">
+    <div className="min-h-screen bg-gradient-to-b from-black to-insura-cyberdark">
       <Navbar />
       <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
@@ -295,7 +391,7 @@ const InsuranceDetail = () => {
               <ArrowRight className="w-4 h-4 mr-1 rotate-180" /> Back to Categories
             </Link>
             <div className="flex justify-center mb-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-insura-cyberdark to-gray-800 flex items-center justify-center border-2 border-insura-neon/30">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-black to-gray-900 flex items-center justify-center border-2 border-insura-neon/30">
                 {categoryInfo.icon}
               </div>
             </div>
@@ -324,7 +420,7 @@ const InsuranceDetail = () => {
             </div>
           </div>
 
-          {activeForm ? (
+          {activeForm && !showResults ? (
             <div className="cyber-card p-8 rounded-2xl max-w-4xl mx-auto mb-16 animate-fade-in">
               <h2 className="text-2xl font-bold mb-6 insura-gradient-text text-center">
                 Tell Us About Your Needs
@@ -333,38 +429,42 @@ const InsuranceDetail = () => {
                 Fill out this form to get personalized {categoryInfo.name.toLowerCase()} recommendations tailored just for you.
               </p>
               
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleFormSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">Full Name</label>
                     <input 
                       type="text" 
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
                       placeholder="Enter your full name"
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">Email Address</label>
                     <input 
                       type="email" 
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
                       placeholder="Enter your email"
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">Age</label>
                     <input 
                       type="number" 
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
                       placeholder="Enter your age"
+                      required
                     />
                   </div>
                   <div>
                     <label className="block text-white text-sm font-medium mb-2">Zip Code</label>
                     <input 
                       type="text" 
-                      className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                      className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
                       placeholder="Enter your zip code"
+                      required
                     />
                   </div>
                 </div>
@@ -377,7 +477,7 @@ const InsuranceDetail = () => {
                         <input
                           type="checkbox"
                           id={`option-${index}`}
-                          className="w-4 h-4 text-insura-neon bg-gray-800 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+                          className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
                         />
                         <label htmlFor={`option-${index}`} className="ml-2 text-sm text-gray-300">
                           {option}
@@ -389,7 +489,7 @@ const InsuranceDetail = () => {
 
                 <div>
                   <label className="block text-white text-sm font-medium mb-2">Monthly Budget</label>
-                  <select className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon">
+                  <select className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon" required>
                     <option value="">Select your budget range</option>
                     <option value="budget1">$0 - $50 per month</option>
                     <option value="budget2">$50 - $100 per month</option>
@@ -401,15 +501,179 @@ const InsuranceDetail = () => {
 
                 <div className="pt-4">
                   <ButtonCustom
+                    type="submit"
                     variant="primary"
                     size="lg"
                     fullWidth
                     className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20"
+                    disabled={isLoading}
                   >
-                    Get My Personalized Recommendations
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Finding Your Best Plans...
+                      </>
+                    ) : "Get My Personalized Recommendations"}
                   </ButtonCustom>
                 </div>
               </form>
+            </div>
+          ) : showResults ? (
+            <div className="animate-fade-in">
+              <div className="cyber-card p-6 mb-8 rounded-2xl border border-insura-neon/30">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center">
+                    <Shield className="h-6 w-6 text-insura-neon mr-3" />
+                    <h3 className="text-xl font-bold text-white">Your Personalized Recommendations</h3>
+                  </div>
+                  <div className="flex space-x-4">
+                    <ButtonCustom
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 text-insura-neon border-insura-neon"
+                      onClick={toggleCurrency}
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      {currency === 'USD' ? 'Show INR' : 'Show USD'}
+                    </ButtonCustom>
+                    <ButtonCustom
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowResults(false);
+                        setActiveForm(true);
+                      }}
+                    >
+                      Modify Your Details
+                    </ButtonCustom>
+                  </div>
+                </div>
+                <p className="mt-3 text-gray-300">
+                  Based on your profile, here are your top insurance matches ranked by suitability.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                {recommendedPlans.map((plan, index) => (
+                  <div 
+                    key={plan.id} 
+                    className={`cyber-card rounded-xl overflow-hidden border transition-all ${
+                      index === 0 ? 'border-insura-neon/70 shadow-lg shadow-insura-neon/20 scale-[1.02]' : 'border-gray-800 hover:shadow-lg hover:shadow-insura-purple/10 hover:-translate-y-1'
+                    }`}
+                  >
+                    <div className="p-6 sm:p-8">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                        <div>
+                          {index === 0 && (
+                            <div className="inline-block px-3 py-1 rounded-full bg-insura-neon text-black text-xs font-medium mb-2 flex items-center">
+                              <Heart className="h-3 w-3 mr-1" />
+                              Best Match
+                            </div>
+                          )}
+                          <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                          <p className="text-sm text-gray-400">by {plan.provider}</p>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <div className="bg-insura-neon/10 rounded-lg py-2 px-3 flex items-center">
+                            <ThumbsUp className="h-5 w-5 text-insura-neon mr-1" />
+                            <span className="font-bold text-insura-neon">{plan.suitabilityScore}% Match</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+                        <div>
+                          <p className="text-sm text-gray-400 mb-1">Monthly Premium</p>
+                          <p className="text-xl font-bold text-white">
+                            {currency === 'USD' ? plan.monthlyPremium : plan.monthlyPremiumINR}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-400 mb-1">Coverage Amount</p>
+                          <p className="text-xl font-bold text-white">
+                            {currency === 'USD' ? plan.coverageAmount : plan.coverageAmountINR}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-400 mb-1">Best For</p>
+                          <p className="text-base font-medium text-gray-300">{plan.description}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-6">
+                        <p className="text-sm text-gray-400 mb-2">Key Benefits</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                          {plan.benefits.map((benefit, i) => (
+                            <div key={i} className="flex items-center">
+                              <Check className="h-4 w-4 text-insura-neon mr-2 flex-shrink-0" />
+                              <span className="text-sm text-gray-300">{benefit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <ButtonCustom
+                          variant={index === 0 ? "primary" : "outline"}
+                          className={index === 0 ? "bg-gradient-to-r from-insura-neon to-insura-purple" : "text-insura-neon border-insura-neon"}
+                        >
+                          Get More Details
+                        </ButtonCustom>
+                        
+                        <ButtonCustom
+                          variant={index === 0 ? "outline" : "ghost"}
+                          className={index === 0 ? "text-insura-neon border-insura-neon" : "text-gray-300"}
+                        >
+                          Compare
+                        </ButtonCustom>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-10 bg-black/50 rounded-lg p-6 border border-gray-800">
+                <h3 className="text-lg font-medium text-white mb-3">Why These Recommendations?</h3>
+                <p className="text-gray-300 mb-4">
+                  Our AI analyzes multiple factors to find plans that best match your profile, including:
+                </p>
+                <ul className="space-y-2">
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-insura-neon mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Your age and family composition</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-insura-neon mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Medical history and specific coverage needs</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-insura-neon mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Your budget constraints and value priorities</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="h-5 w-5 text-insura-neon mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">Regional factors that affect insurance pricing</span>
+                  </li>
+                </ul>
+                <div className="mt-4">
+                  <ButtonCustom
+                    variant="primary"
+                    size="sm"
+                    fullWidth
+                    className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                    onClick={() => {
+                      setShowResults(false);
+                      setActiveForm(false);
+                    }}
+                  >
+                    Start a New Recommendation
+                  </ButtonCustom>
+                </div>
+              </div>
             </div>
           ) : (
             <>
@@ -447,7 +711,7 @@ const InsuranceDetail = () => {
                 </h2>
                 <div className="space-y-6">
                   {categoryInfo.commonQuestions.map((qa, index) => (
-                    <div key={index} className="bg-black/30 rounded-lg p-6 border border-gray-800">
+                    <div key={index} className="bg-black/60 rounded-lg p-6 border border-gray-800">
                       <h3 className="text-lg font-semibold mb-3 text-white">{qa.question}</h3>
                       <p className="text-gray-300">{qa.answer}</p>
                     </div>
