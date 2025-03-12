@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Heart, Home, Car, Globe, Briefcase, Shield, User, Check, ArrowRight, RefreshCw } from 'lucide-react';
+import { Heart, Home, Car, Globe, Briefcase, Shield, User, Check, ArrowRight, RefreshCw, ThumbsUp } from 'lucide-react';
 
 interface InsuranceCategory {
   id: string;
@@ -291,7 +290,6 @@ const InsuranceDetail = () => {
 
   const categoryInfo = categoryId ? insuranceData[categoryId] : null;
 
-  // Redirect if category doesn't exist
   useEffect(() => {
     if (categoryId && !insuranceData[categoryId]) {
       window.location.href = '/insurance-categories';
@@ -307,11 +305,9 @@ const InsuranceDetail = () => {
   };
 
   const convertToINR = (usdAmount: string): string => {
-    // Remove $ symbol and convert to number
     const amount = parseFloat(usdAmount.replace(/[$,]/g, ''));
     if (isNaN(amount)) return usdAmount;
     
-    // Convert to INR and format
     const inrAmount = amount * exchangeRate;
     return `₹${inrAmount.toLocaleString('en-IN')}`;
   };
@@ -320,9 +316,7 @@ const InsuranceDetail = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call with a timeout
     setTimeout(() => {
-      // Generate mock insurance plans based on selected category
       const mockPlans: RecommendedPlan[] = [
         {
           id: '1',
@@ -385,7 +379,6 @@ const InsuranceDetail = () => {
       <Navbar />
       <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          {/* Hero Section */}
           <div className="mb-16 text-center">
             <Link to="/insurance-categories" className="inline-flex items-center text-insura-neon mb-4 hover:underline">
               <ArrowRight className="w-4 h-4 mr-1 rotate-180" /> Back to Categories
@@ -677,7 +670,6 @@ const InsuranceDetail = () => {
             </div>
           ) : (
             <>
-              {/* Coverage Options */}
               <div className="cyber-card p-8 rounded-2xl max-w-4xl mx-auto mb-16">
                 <h2 className="text-2xl font-bold mb-6 insura-gradient-text text-center">
                   What {categoryInfo.name} Typically Covers
@@ -704,7 +696,6 @@ const InsuranceDetail = () => {
                 </div>
               </div>
 
-              {/* FAQ Section */}
               <div className="cyber-card p-8 rounded-2xl max-w-4xl mx-auto">
                 <h2 className="text-2xl font-bold mb-6 insura-gradient-text text-center">
                   Common Questions About {categoryInfo.name}
