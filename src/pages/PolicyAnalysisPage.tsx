@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { BrainCircuit, Upload, FileText, Check, FileType, AlertCircle } from 'lucide-react';
+import { BrainCircuit, Upload, FileText, Check, FileType, AlertCircle, CheckCircle } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { analyzePolicyDocument } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
