@@ -4,7 +4,6 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import PolicyAnalyzer from '@/components/PolicyAnalyzer';
-import InsuranceRecommender from '@/components/InsuranceRecommender';
 import ChatAssistant from '@/components/ChatAssistant';
 import Testimonials from '@/components/Testimonials';
 import AITools from '@/components/AITools';
@@ -17,11 +16,10 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900">
       <Navbar />
       <Hero />
       <Features />
-      <InsuranceRecommender />
       <PolicyAnalyzer />
       <ChatAssistant />
       <AITools />

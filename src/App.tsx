@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import InsuranceCategories from "./pages/InsuranceCategories";
 import InsuranceDetail from "./pages/InsuranceDetail";
 import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 import PolicyAnalysisPage from "./pages/PolicyAnalysisPage";
 import PremiumCalculatorPage from "./pages/PremiumCalculatorPage";
 import CoverageOptimizerPage from "./pages/CoverageOptimizerPage";
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/insurance-categories" element={<InsuranceCategories />} />
           <Route path="/insurance/:categoryId" element={<InsuranceDetail />} />
           <Route path="/auth/signin" element={<SignIn />} />
+          <Route path="/auth/signup" element={<SignUp />} />
           <Route path="/tools/policy-analysis" element={<PolicyAnalysisPage />} />
           <Route path="/tools/premium-calculator" element={<PremiumCalculatorPage />} />
           <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />

@@ -1,51 +1,54 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Lock, Mail, User, AlertCircle } from 'lucide-react';
-import { signIn, getCurrentUser } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
-const SignIn = () => {
+const SignUp = () => {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const user = getCurrentUser();
-    if (user) {
-      navigate('/insurance-categories');
-    }
-  }, [navigate]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
     setIsLoading(true);
 
-    try {
-      await signIn(email, password);
+    // Simulate sign up process
+    setTimeout(() => {
+      // Store user data in localStorage for persistence
+      const user = {
+        id: `usr_${Math.random().toString(36).substr(2, 9)}`,
+        name: fullName,
+        email: email,
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
+      };
+      
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('token', 'sample_jwt_token');
+      
       toast({
-        title: "Sign in successful",
-        description: "Welcome back to InsuraAI!",
+        title: "Account created!",
+        description: "Welcome to InsuraAI. Your account has been created successfully.",
       });
-      navigate('/insurance-categories');
-    } catch (err) {
-      setError('Failed to sign in. Please check your credentials and try again.');
-      toast({
-        variant: "destructive",
-        title: "Sign in failed",
-        description: "Please check your credentials and try again.",
-      });
-    } finally {
+      
       setIsLoading(false);
-    }
+      navigate('/insurance-categories');
+    }, 1500);
   };
 
   return (
@@ -58,8 +61,8 @@ const SignIn = () => {
               <div className="inline-block p-4 rounded-full bg-insura-neon/10 mb-4">
                 <User className="w-8 h-8 text-insura-neon" />
               </div>
-              <h1 className="text-2xl font-bold mb-2 insura-gradient-text">Sign In to InsuraAI</h1>
-              <p className="text-gray-400">Access your personalized insurance dashboard</p>
+              <h1 className="text-2xl font-bold mb-2 insura-gradient-text">Sign Up for InsuraAI</h1>
+              <p className="text-gray-400">Create your account to get personalized insurance recommendations</p>
             </div>
 
             {error && (
@@ -69,7 +72,25 @@ const SignIn = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="name" className="block text-gray-300 text-sm font-medium mb-2">Full Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    id="name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label htmlFor="email" className="block text-gray-300 text-sm font-medium mb-2">Email Address</label>
                 <div className="relative">
@@ -101,28 +122,40 @@ const SignIn = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label htmlFor="confirmPassword" className="block text-gray-300 text-sm font-medium mb-2">Confirm Password</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                    placeholder="Confirm your password"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-insura-neon bg-gray-800 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
-                    Remember me
-                  </label>
-                </div>
-                <div className="text-sm">
-                  <a href="#" className="text-insura-neon hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
+              <div className="flex items-center">
+                <input
+                  id="terms"
+                  name="terms"
+                  type="checkbox"
+                  required
+                  className="h-4 w-4 text-insura-neon bg-gray-800 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+                />
+                <label htmlFor="terms" className="ml-2 block text-sm text-gray-400">
+                  I agree to the <a href="#" className="text-insura-neon hover:underline">Terms of Service</a> and <a href="#" className="text-insura-neon hover:underline">Privacy Policy</a>
+                </label>
               </div>
 
               <ButtonCustom
@@ -131,7 +164,7 @@ const SignIn = () => {
                 type="submit"
                 fullWidth
                 disabled={isLoading}
-                className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20"
+                className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20 mt-2"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -139,19 +172,19 @@ const SignIn = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Signing In...
+                    Creating Account...
                   </div>
                 ) : (
-                  'Sign In'
+                  'Create Account'
                 )}
               </ButtonCustom>
             </form>
 
             <div className="mt-8 pt-6 border-t border-gray-800">
               <p className="text-center text-gray-400">
-                Don't have an account?{' '}
-                <Link to="/auth/signup" className="text-insura-neon hover:underline">
-                  Sign up
+                Already have an account?{' '}
+                <Link to="/auth/signin" className="text-insura-neon hover:underline">
+                  Sign in
                 </Link>
               </p>
             </div>
@@ -163,4 +196,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default SignUp;
