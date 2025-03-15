@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { InsuranceCategory } from '@/types/insurance';
+import { InsuranceFormData } from '@/services/api';
+import { toast } from 'sonner';
 
 interface InsuranceFormProps {
   categoryInfo: InsuranceCategory;
   isLoading: boolean;
-  handleFormSubmit: (e: React.FormEvent) => void;
+  handleFormSubmit: (formData: InsuranceFormData) => void;
 }
 
 const InsuranceForm: React.FC<InsuranceFormProps> = ({ 
@@ -14,6 +16,43 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
   isLoading, 
   handleFormSubmit 
 }) => {
+  const [formData, setFormData] = useState<InsuranceFormData>({
+    fullName: '',
+    email: '',
+    age: '',
+    zipCode: '',
+    features: [],
+    budget: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    
+    setFormData(prev => {
+      if (checked) {
+        return { ...prev, features: [...prev.features, value] };
+      } else {
+        return { ...prev, features: prev.features.filter(feature => feature !== value) };
+      }
+    });
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.fullName || !formData.email || !formData.age || !formData.zipCode || !formData.budget) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    handleFormSubmit(formData);
+  };
+
   return (
     <div className="cyber-card p-8 rounded-2xl max-w-4xl mx-auto mb-16 animate-fade-in">
       <h2 className="text-2xl font-bold mb-6 insura-gradient-text text-center">
@@ -23,12 +62,15 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
         Fill out this form to get personalized {categoryInfo.name.toLowerCase()} recommendations tailored just for you.
       </p>
       
-      <form className="space-y-6" onSubmit={handleFormSubmit}>
+      <form className="space-y-6" onSubmit={onSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-white text-sm font-medium mb-2">Full Name</label>
             <input 
               type="text" 
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
               placeholder="Enter your full name"
               required
@@ -38,6 +80,9 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
             <label className="block text-white text-sm font-medium mb-2">Email Address</label>
             <input 
               type="email" 
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
               placeholder="Enter your email"
               required
@@ -47,6 +92,9 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
             <label className="block text-white text-sm font-medium mb-2">Age</label>
             <input 
               type="number" 
+              name="age"
+              value={formData.age}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
               placeholder="Enter your age"
               required
@@ -56,6 +104,9 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
             <label className="block text-white text-sm font-medium mb-2">Zip Code</label>
             <input 
               type="text" 
+              name="zipCode"
+              value={formData.zipCode}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
               placeholder="Enter your zip code"
               required
@@ -71,6 +122,9 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
                 <input
                   type="checkbox"
                   id={`option-${index}`}
+                  name="features"
+                  value={option}
+                  onChange={handleCheckboxChange}
                   className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
                 />
                 <label htmlFor={`option-${index}`} className="ml-2 text-sm text-gray-300">
@@ -83,13 +137,19 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
 
         <div>
           <label className="block text-white text-sm font-medium mb-2">Monthly Budget</label>
-          <select className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon" required>
+          <select 
+            name="budget"
+            value={formData.budget}
+            onChange={handleInputChange}
+            className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon" 
+            required
+          >
             <option value="">Select your budget range</option>
-            <option value="budget1">$0 - $50 per month</option>
-            <option value="budget2">$50 - $100 per month</option>
-            <option value="budget3">$100 - $200 per month</option>
-            <option value="budget4">$200 - $300 per month</option>
-            <option value="budget5">$300+ per month</option>
+            <option value="0-50">₹0 - ₹4,175 per month</option>
+            <option value="50-100">₹4,175 - ₹8,350 per month</option>
+            <option value="100-200">₹8,350 - ₹16,700 per month</option>
+            <option value="200-300">₹16,700 - ₹25,050 per month</option>
+            <option value="300-1000">₹25,050+ per month</option>
           </select>
         </div>
 
