@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ButtonCustom } from './ui/button-custom';
 import { BrainCircuit, Calculator, PieChart, Bot, FileSearch, Search } from 'lucide-react';
@@ -15,11 +14,19 @@ const AITools = () => {
       link: "/tools/policy-analysis"
     },
     {
-      icon: <Calculator className="w-12 h-12 text-indigo-400" />,
+      icon: <Search className="w-12 h-12 text-indigo-400" />,
+      title: "Insurance Plan Finder",
+      description: "Our AI matches your specific needs with the perfect insurance plans from top providers",
+      buttonText: "Find Plans",
+      color: "bg-black/60 border-indigo-400/30",
+      link: "/tools/plan-finder"
+    },
+    {
+      icon: <Calculator className="w-12 h-12 text-violet-400" />,
       title: "Premium Calculator",
       description: "Get instant premium estimates based on your specific needs and risk profile",
       buttonText: "Calculate Premium",
-      color: "bg-black/60 border-indigo-400/30",
+      color: "bg-black/60 border-violet-400/30",
       link: "/tools/premium-calculator"
     },
     {
