@@ -45,14 +45,6 @@ const AITools = () => {
       buttonText: "Check My Claim",
       color: "bg-black/60 border-emerald-400/30",
       link: "/tools/claim-checker"
-    },
-    {
-      icon: <Search className="w-12 h-12 text-insura-purple" />,
-      title: "Insurance Plan Finder",
-      description: "Answer a few questions and our AI will recommend the best plans for you",
-      buttonText: "Find Plans",
-      color: "bg-black/60 border-insura-purple/30",
-      link: "/insurance-categories"
     }
   ];
 
