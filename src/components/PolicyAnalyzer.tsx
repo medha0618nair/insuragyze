@@ -104,13 +104,15 @@ const PolicyAnalyzer = () => {
             
             <div className="text-center">
               <Link to="/tools/policy-analysis">
-                <ButtonCustom
-                  variant="primary"
-                  size="lg"
-                  className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20"
-                >
-                  Analyze My Policy Now
-                </ButtonCustom>
+                <label>
+                  <ButtonCustom
+                    variant="primary"
+                    size="lg"
+                    className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20 cursor-pointer"
+                  >
+                    Analyze My Policy Now
+                  </ButtonCustom>
+                </label>
               </Link>
             </div>
           </div>

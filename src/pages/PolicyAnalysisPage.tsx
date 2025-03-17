@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { BrainCircuit, Upload, FileText, Check, FileType, AlertCircle, CheckCircle } from 'lucide-react';
@@ -13,6 +13,7 @@ const PolicyAnalysisPage = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -35,6 +36,13 @@ const PolicyAnalysisPage = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+    }
+  };
+
+  const handleSelectFileClick = () => {
+    // Programmatically click the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -168,6 +176,7 @@ const PolicyAnalysisPage = () => {
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
+                  onClick={!file ? handleSelectFileClick : undefined}
                 >
                   <div className="mb-6 flex justify-center">
                     {getFileIcon()}
@@ -186,22 +195,14 @@ const PolicyAnalysisPage = () => {
                   </p>
                   
                   {!file ? (
-                    <label htmlFor="file-upload" className="cursor-pointer">
-                      <ButtonCustom 
-                        variant="primary" 
-                        size="md"
-                        className="bg-gradient-to-r from-insura-neon to-insura-purple"
-                      >
-                        Select File
-                      </ButtonCustom>
-                      <input 
-                        id="file-upload" 
-                        type="file" 
-                        className="hidden" 
-                        onChange={handleFileChange}
-                        accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                      />
-                    </label>
+                    <ButtonCustom 
+                      variant="primary" 
+                      size="md"
+                      className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                      onClick={handleSelectFileClick}
+                    >
+                      Select File
+                    </ButtonCustom>
                   ) : (
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                       <ButtonCustom 
@@ -234,6 +235,16 @@ const PolicyAnalysisPage = () => {
                       </ButtonCustom>
                     </div>
                   )}
+                  
+                  {/* Hidden file input */}
+                  <input 
+                    ref={fileInputRef}
+                    id="file-upload" 
+                    type="file" 
+                    className="hidden" 
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                  />
                 </div>
                 
                 <div className="text-center mt-12">
