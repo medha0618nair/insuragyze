@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ButtonCustom } from './ui/button-custom';
 import { Upload, FileType, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ const PolicyAnalyzer = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -31,6 +32,12 @@ const PolicyAnalyzer = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+    }
+  };
+
+  const handleFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -102,17 +109,92 @@ const PolicyAnalyzer = () => {
               </p>
             </div>
             
-            <div className="text-center">
-              <Link to="/tools/policy-analysis">
-                <label>
-                  <ButtonCustom
-                    variant="primary"
-                    size="lg"
-                    className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20 cursor-pointer"
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                isDragging ? 'border-insura-neon bg-insura-neon/10' : 'border-gray-700 hover:border-gray-500'
+              } ${file ? 'bg-black/20' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={!file ? handleFileSelect : undefined}
+            >
+              <div className="mb-4 flex justify-center">
+                {getFileIcon()}
+              </div>
+              
+              {file ? (
+                <div>
+                  <p className="font-medium text-white mb-2">{file.name}</p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type}
+                  </p>
+                  
+                  <div className="flex justify-center gap-4">
+                    <ButtonCustom
+                      variant="primary"
+                      size="md"
+                      className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing}
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Analyzing...
+                        </>
+                      ) : (
+                        'Analyze Policy'
+                      )}
+                    </ButtonCustom>
+                    
+                    <ButtonCustom
+                      variant="outline"
+                      size="md"
+                      onClick={handleReset}
+                    >
+                      Choose Different File
+                    </ButtonCustom>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="font-medium text-white mb-2">
+                    Drag and drop your insurance policy here
+                  </p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    or click to select a file
+                  </p>
+                  <ButtonCustom 
+                    variant="primary" 
+                    size="md"
+                    className="bg-gradient-to-r from-insura-neon to-insura-purple"
                   >
-                    Analyze My Policy Now
+                    Select File
                   </ButtonCustom>
-                </label>
+                </>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+              />
+            </div>
+            
+            <div className="text-center mt-6">
+              <Link to="/tools/policy-analysis">
+                <ButtonCustom
+                  variant="primary"
+                  size="lg"
+                  className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20 cursor-pointer"
+                >
+                  Analyze My Policy Now
+                </ButtonCustom>
               </Link>
             </div>
           </div>
