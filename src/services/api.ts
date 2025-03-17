@@ -1,4 +1,3 @@
-
 import { RecommendedPlan } from '@/types/insurance';
 
 const API_URL = 'http://localhost:3001/api';
@@ -26,6 +25,26 @@ export interface UserCredentials {
 
 export interface SignUpData extends UserCredentials {
   name: string;
+}
+
+export interface PolicyAnalysisResult {
+  summary: {
+    coverageAmount: number;
+    personalProperty: number;
+    liability: number;
+    waterDamageCovered: boolean;
+    theftCovered: boolean;
+  };
+  exclusions: string[];
+  deductibles: {
+    standard: number | string;
+    windHail: string;
+  };
+  recommendations: {
+    type: 'warning' | 'success' | 'info';
+    title: string;
+    description: string;
+  }[];
 }
 
 export const fetchInsuranceRecommendations = async (
@@ -91,7 +110,7 @@ export const fetchAIRecommendations = async (data: AIRecommendationData) => {
   }
 };
 
-export const analyzePolicyDocument = async (formData: FormData) => {
+export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
     const token = localStorage.getItem('token');
     const headers: Record<string, string> = {};
@@ -262,7 +281,6 @@ export const signIn = async (email: string, password: string) => {
       throw new Error(result.error || 'Failed to sign in');
     }
     
-    // Store user data in localStorage for persistence
     localStorage.setItem('user', JSON.stringify(result.data.user));
     localStorage.setItem('token', result.data.token);
     
@@ -293,7 +311,6 @@ export const signUp = async (data: SignUpData) => {
       throw new Error(result.error || 'Failed to sign up');
     }
     
-    // Store user data in localStorage for persistence
     localStorage.setItem('user', JSON.stringify(result.data.user));
     localStorage.setItem('token', result.data.token);
     

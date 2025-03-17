@@ -3,13 +3,17 @@ import React, { useState, useRef } from 'react';
 import { ButtonCustom } from './ui/button-custom';
 import { Upload, FileType, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { analyzePolicyDocument } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 
 const PolicyAnalyzer = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -41,21 +45,39 @@ const PolicyAnalyzer = () => {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!file) return;
     
     setIsAnalyzing(true);
     
-    // Simulate analysis process
-    setTimeout(() => {
-      setIsAnalyzing(false);
+    try {
+      const formData = new FormData();
+      formData.append('policyFile', file);
+      
+      const result = await analyzePolicyDocument(formData);
+      setAnalysisResult(result);
       setIsAnalyzed(true);
-    }, 2500);
+      
+      toast({
+        title: "Analysis Complete",
+        description: "Your policy has been successfully analyzed",
+      });
+    } catch (error) {
+      console.error("Error analyzing document:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "There was an error analyzing your document. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleReset = () => {
     setFile(null);
     setIsAnalyzed(false);
+    setAnalysisResult(null);
   };
 
   const getFileIcon = () => {
@@ -109,82 +131,171 @@ const PolicyAnalyzer = () => {
               </p>
             </div>
             
-            <div 
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-                isDragging ? 'border-insura-neon bg-insura-neon/10' : 'border-gray-700 hover:border-gray-500'
-              } ${file ? 'bg-black/20' : ''}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={!file ? handleFileSelect : undefined}
-            >
-              <div className="mb-4 flex justify-center">
-                {getFileIcon()}
-              </div>
-              
-              {file ? (
-                <div>
-                  <p className="font-medium text-white mb-2">{file.name}</p>
-                  <p className="text-gray-400 text-sm mb-4">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type}
-                  </p>
-                  
-                  <div className="flex justify-center gap-4">
-                    <ButtonCustom
-                      variant="primary"
-                      size="md"
-                      className="bg-gradient-to-r from-insura-neon to-insura-purple"
-                      onClick={handleAnalyze}
-                      disabled={isAnalyzing}
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Analyzing...
-                        </>
-                      ) : (
-                        'Analyze Policy'
-                      )}
-                    </ButtonCustom>
-                    
-                    <ButtonCustom
-                      variant="outline"
-                      size="md"
-                      onClick={handleReset}
-                    >
-                      Choose Different File
-                    </ButtonCustom>
-                  </div>
+            {!isAnalyzed ? (
+              <div 
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                  isDragging ? 'border-insura-neon bg-insura-neon/10' : 'border-gray-700 hover:border-gray-500'
+                } ${file ? 'bg-black/20' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={!file ? handleFileSelect : undefined}
+              >
+                <div className="mb-4 flex justify-center">
+                  {getFileIcon()}
                 </div>
-              ) : (
-                <>
-                  <p className="font-medium text-white mb-2">
-                    Drag and drop your insurance policy here
+                
+                {file ? (
+                  <div>
+                    <p className="font-medium text-white mb-2">{file.name}</p>
+                    <p className="text-gray-400 text-sm mb-4">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB • {file.type}
+                    </p>
+                    
+                    <div className="flex justify-center gap-4">
+                      <ButtonCustom
+                        variant="primary"
+                        size="md"
+                        className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                        onClick={handleAnalyze}
+                        disabled={isAnalyzing}
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Analyzing...
+                          </>
+                        ) : (
+                          'Analyze Policy'
+                        )}
+                      </ButtonCustom>
+                      
+                      <ButtonCustom
+                        variant="outline"
+                        size="md"
+                        onClick={handleReset}
+                      >
+                        Choose Different File
+                      </ButtonCustom>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-medium text-white mb-2">
+                      Drag and drop your insurance policy here
+                    </p>
+                    <p className="text-gray-400 text-sm mb-4">
+                      or click to select a file
+                    </p>
+                    <label htmlFor="file-upload">
+                      <ButtonCustom 
+                        variant="primary" 
+                        size="md"
+                        className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                      >
+                        Select File
+                      </ButtonCustom>
+                    </label>
+                  </>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                />
+              </div>
+            ) : (
+              <div className="bg-black/30 rounded-lg p-6 border border-gray-800">
+                <div className="mb-6 flex items-center">
+                  <CheckCircle className="w-6 h-6 text-green-500 mr-3" />
+                  <h3 className="text-xl font-bold text-white">Analysis Complete</h3>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="font-medium text-insura-neon mb-2">Coverage Highlights</h4>
+                  <ul className="list-disc pl-5 space-y-2 text-gray-300">
+                    <li>Home structure covered up to ${analysisResult?.summary?.coverageAmount?.toLocaleString()}</li>
+                    <li>Personal property covered up to ${analysisResult?.summary?.personalProperty?.toLocaleString()}</li>
+                    <li>Liability protection up to ${analysisResult?.summary?.liability?.toLocaleString()}</li>
+                    {analysisResult?.summary?.waterDamageCovered && <li>Water damage from plumbing issues is covered</li>}
+                    {analysisResult?.summary?.theftCovered && <li>Theft and vandalism are covered</li>}
+                  </ul>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="font-medium text-insura-neon mb-2">Key Exclusions</h4>
+                  <ul className="list-disc pl-5 space-y-2 text-gray-300">
+                    {analysisResult?.exclusions?.map((exclusion: string, index: number) => (
+                      <li key={index}>{exclusion}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="font-medium text-insura-neon mb-2">Deductibles</h4>
+                  <p className="text-gray-300">
+                    Standard deductible: ${analysisResult?.deductibles?.standard}<br />
+                    Wind/hail deductible: {analysisResult?.deductibles?.windHail}
                   </p>
-                  <p className="text-gray-400 text-sm mb-4">
-                    or click to select a file
-                  </p>
-                  <ButtonCustom 
-                    variant="primary" 
+                </div>
+                
+                <div className="mb-6">
+                  <h4 className="font-medium text-insura-neon mb-2">Recommendations</h4>
+                  {analysisResult?.recommendations?.map((rec: any, index: number) => (
+                    <div key={index} className="flex items-start mb-4">
+                      <div className={`p-1 rounded mr-3 flex-shrink-0 mt-1 ${
+                        rec.type === 'warning' ? 'bg-yellow-900/30 text-yellow-500' :
+                        rec.type === 'success' ? 'bg-green-900/30 text-green-500' :
+                        'bg-blue-900/30 text-blue-400'
+                      }`}>
+                        {rec.type === 'warning' ? (
+                          <AlertCircle className="h-5 w-5" />
+                        ) : rec.type === 'success' ? (
+                          <CheckCircle className="h-5 w-5" />
+                        ) : (
+                          <FileText className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{rec.title}</p>
+                        <p className="text-gray-300">{rec.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-center gap-4">
+                  <ButtonCustom
+                    variant="outline"
+                    size="md"
+                    onClick={handleReset}
+                  >
+                    Analyze Another Policy
+                  </ButtonCustom>
+                  
+                  <ButtonCustom
+                    variant="primary"
                     size="md"
                     className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                    onClick={() => {
+                      toast({
+                        title: "Download Started",
+                        description: "Your policy summary is downloading",
+                      });
+                    }}
                   >
-                    Select File
+                    Download Summary
                   </ButtonCustom>
-                </>
-              )}
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-              />
-            </div>
+                </div>
+              </div>
+            )}
             
             <div className="text-center mt-6">
               <Link to="/tools/policy-analysis">

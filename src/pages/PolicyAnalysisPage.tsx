@@ -4,14 +4,14 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { BrainCircuit, Upload, FileText, Check, FileType, AlertCircle, CheckCircle } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { analyzePolicyDocument } from '@/services/api';
+import { analyzePolicyDocument, PolicyAnalysisResult } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 const PolicyAnalysisPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<PolicyAnalysisResult | null>(null);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,53 +62,13 @@ const PolicyAnalysisPage = () => {
       const formData = new FormData();
       formData.append('policyFile', file);
       
-      // In a real application, you'd make the API call
-      // For demo purposes, we'll simulate it with a timeout
-      setTimeout(() => {
-        setIsAnalyzing(false);
-        setAnalysisResult({
-          coverageHighlights: [
-            "Home structure covered up to $350,000",
-            "Personal property covered up to $175,000",
-            "Liability protection up to $300,000",
-            "Water damage from plumbing issues is covered",
-            "Theft and vandalism are covered"
-          ],
-          exclusions: [
-            "Flood damage is not covered (separate policy needed)",
-            "Earthquake damage is not covered",
-            "Damage from neglect or poor maintenance",
-            "Business equipment valued over $2,500"
-          ],
-          deductibles: {
-            standard: "$1,000",
-            windHail: "2% of dwelling coverage"
-          },
-          recommendations: [
-            {
-              type: "warning",
-              title: "Consider Flood Insurance",
-              description: "Your home is in a moderate flood zone, but your policy doesn't cover flood damage."
-            },
-            {
-              type: "success",
-              title: "Good Liability Coverage",
-              description: "Your liability coverage of $300,000 is adequate for your property value."
-            },
-            {
-              type: "info",
-              title: "Tip: Inventory Your Possessions",
-              description: "Creating a home inventory can help ensure you have adequate personal property coverage."
-            }
-          ]
-        });
-        
-        toast({
-          title: "Analysis Complete",
-          description: "Your policy has been successfully analyzed",
-        });
-      }, 3000);
+      const result = await analyzePolicyDocument(formData);
+      setAnalysisResult(result);
       
+      toast({
+        title: "Analysis Complete",
+        description: "Your policy has been successfully analyzed",
+      });
     } catch (error) {
       console.error("Error analyzing document:", error);
       setIsAnalyzing(false);
@@ -117,6 +77,8 @@ const PolicyAnalysisPage = () => {
         description: "There was an error analyzing your document. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -195,14 +157,15 @@ const PolicyAnalysisPage = () => {
                   </p>
                   
                   {!file ? (
-                    <ButtonCustom 
-                      variant="primary" 
-                      size="md"
-                      className="bg-gradient-to-r from-insura-neon to-insura-purple"
-                      onClick={handleSelectFileClick}
-                    >
-                      Select File
-                    </ButtonCustom>
+                    <label htmlFor="file-upload">
+                      <ButtonCustom 
+                        variant="primary" 
+                        size="md"
+                        className="bg-gradient-to-r from-insura-neon to-insura-purple"
+                      >
+                        Select File
+                      </ButtonCustom>
+                    </label>
                   ) : (
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                       <ButtonCustom 
@@ -295,9 +258,11 @@ const PolicyAnalysisPage = () => {
                   <div>
                     <h4 className="font-medium text-insura-neon mb-2">Coverage Highlights</h4>
                     <ul className="list-disc pl-5 space-y-2 text-gray-300">
-                      {analysisResult.coverageHighlights.map((item: string, index: number) => (
-                        <li key={index}>{item}</li>
-                      ))}
+                      <li>Home structure covered up to ${analysisResult.summary.coverageAmount.toLocaleString()}</li>
+                      <li>Personal property covered up to ${analysisResult.summary.personalProperty.toLocaleString()}</li>
+                      <li>Liability protection up to ${analysisResult.summary.liability.toLocaleString()}</li>
+                      {analysisResult.summary.waterDamageCovered && <li>Water damage from plumbing issues is covered</li>}
+                      {analysisResult.summary.theftCovered && <li>Theft and vandalism are covered</li>}
                     </ul>
                   </div>
                   
@@ -313,7 +278,9 @@ const PolicyAnalysisPage = () => {
                   <div>
                     <h4 className="font-medium text-insura-neon mb-2">Deductibles</h4>
                     <p className="text-gray-300">
-                      Standard deductible: {analysisResult.deductibles.standard}<br />
+                      Standard deductible: {typeof analysisResult.deductibles.standard === 'number' ? 
+                        `$${analysisResult.deductibles.standard.toLocaleString()}` : 
+                        analysisResult.deductibles.standard}<br />
                       Wind/hail deductible: {analysisResult.deductibles.windHail}
                     </p>
                   </div>
