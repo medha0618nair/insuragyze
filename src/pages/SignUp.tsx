@@ -32,23 +32,28 @@ const SignUp = () => {
   }, [navigate]);
 
   const formatPhoneNumber = (input: string): string => {
-    // Ensure phone number is in E.164 format
-    let formatted = input.replace(/\D/g, '');
+    // Remove all non-digit characters
+    let digits = input.replace(/\D/g, '');
     
-    // Check if it's an Indian number (10 digits with optional +91 prefix)
-    if (formatted.startsWith('91') && formatted.length >= 12) {
-      // Already has country code
-      return '+' + formatted;
-    } else if (formatted.length === 10) {
-      // Indian number without country code
-      return '+91' + formatted;
-    } else if (formatted.length > 0 && !formatted.startsWith('1')) {
-      // Handle US numbers as before
-      formatted = '1' + formatted;
-      return '+' + formatted;
+    // Handle Indian numbers (10 digits)
+    if (digits.length === 10) {
+      // For 10 digit Indian numbers, add the country code
+      return '+91' + digits;
     }
     
-    return '+' + formatted;
+    // Handle numbers that already include the country code
+    if (digits.startsWith('91') && digits.length === 12) {
+      return '+' + digits;
+    }
+    
+    // Handle US numbers or any other format
+    if (digits.length > 0 && !digits.startsWith('1') && !digits.startsWith('91')) {
+      // Default to US for other numbers
+      digits = '1' + digits;
+    }
+    
+    // Ensure it starts with +
+    return digits.startsWith('+') ? digits : '+' + digits;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,12 +66,13 @@ const SignUp = () => {
     }
 
     // Format the phone number properly before proceeding
-    const formattedPhone = formatPhoneNumber(phone);
-    setPhone(formattedPhone);
+    const formattedPhone = phone ? formatPhoneNumber(phone) : '';
     
     setIsLoading(true);
 
     try {
+      console.log("Registering with phone number:", formattedPhone);
+      
       // First, sign up the user with email and password
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -86,6 +92,8 @@ const SignUp = () => {
       if (formattedPhone && formattedPhone.length > 10) {
         // Sign out from the email registration so we can do the phone verification
         await supabase.auth.signOut();
+        
+        console.log("Sending OTP to:", formattedPhone);
         
         // Send OTP to the phone number
         const { error: otpError } = await supabase.auth.signInWithOtp({

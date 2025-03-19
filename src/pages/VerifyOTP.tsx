@@ -45,6 +45,8 @@ const VerifyOTP = () => {
     setIsLoading(true);
 
     try {
+      console.log(`Verifying OTP for ${verificationMethod === 'sms' ? phone : email}`);
+      
       if (verificationMethod === 'sms') {
         // Verify OTP using Supabase Auth Verify OTP endpoint
         const { data, error } = await supabase.auth.verifyOtp({
@@ -95,6 +97,8 @@ const VerifyOTP = () => {
 
     try {
       if (verificationMethod === 'sms') {
+        console.log("Resending OTP to:", phone);
+        
         const { error } = await supabase.auth.signInWithOtp({
           phone: phone
         });
