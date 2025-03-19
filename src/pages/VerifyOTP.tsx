@@ -18,12 +18,14 @@ const VerifyOTP = () => {
   const { toast } = useToast();
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [verificationMethod, setVerificationMethod] = useState<'sms' | 'email'>('sms');
 
   useEffect(() => {
     // Extract state from location if available
     if (location.state) {
       setPhone(location.state.phone || '');
       setEmail(location.state.email || '');
+      setVerificationMethod(location.state.phone ? 'sms' : 'email');
     }
 
     // Check if user is already logged in with a verified session
@@ -43,22 +45,39 @@ const VerifyOTP = () => {
     setIsLoading(true);
 
     try {
-      // Verify OTP using Supabase Auth Verify OTP endpoint
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone,
-        token: otp,
-        type: 'sms'
-      });
+      if (verificationMethod === 'sms') {
+        // Verify OTP using Supabase Auth Verify OTP endpoint
+        const { data, error } = await supabase.auth.verifyOtp({
+          phone,
+          token: otp,
+          type: 'sms'
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Phone number verified successfully!",
-        description: "Your account is now fully verified.",
-      });
+        toast({
+          title: "Phone number verified successfully!",
+          description: "Your account is now fully verified.",
+        });
+      } else {
+        // Verify email OTP
+        const { data, error } = await supabase.auth.verifyOtp({
+          email,
+          token: otp,
+          type: 'signup'
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Email verified successfully!",
+          description: "Your account is now fully verified.",
+        });
+      }
       
       navigate('/insurance-categories');
     } catch (err: any) {
+      console.error("Verification error:", err);
       setError(err.message || 'Failed to verify OTP. Please try again.');
       toast({
         variant: "destructive",
@@ -75,17 +94,33 @@ const VerifyOTP = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: phone
-      });
+      if (verificationMethod === 'sms') {
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: phone
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Code resent",
-        description: "A new verification code has been sent to your phone."
-      });
+        toast({
+          title: "Code resent",
+          description: "A new verification code has been sent to your phone."
+        });
+      } else {
+        // Resend email verification
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email: email
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Code resent",
+          description: "A new verification code has been sent to your email."
+        });
+      }
     } catch (err: any) {
+      console.error("Resend error:", err);
       setError(err.message || 'Failed to resend verification code.');
       toast({
         variant: "destructive",
@@ -97,6 +132,26 @@ const VerifyOTP = () => {
     }
   };
 
+  const getVerificationTarget = () => {
+    if (verificationMethod === 'sms') {
+      // Format the phone number for display
+      let displayPhone = phone;
+      if (phone && phone.length > 8) {
+        // Show last 4 digits for privacy
+        displayPhone = "..." + phone.slice(-4);
+      }
+      return displayPhone || "your phone";
+    } else {
+      // Mask email for display
+      let displayEmail = email;
+      if (email && email.includes('@')) {
+        const [username, domain] = email.split('@');
+        displayEmail = username.slice(0, 3) + "***@" + domain;
+      }
+      return displayEmail || "your email";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-gray-900">
       <Navbar />
@@ -104,8 +159,12 @@ const VerifyOTP = () => {
         <div className="w-full max-w-md">
           <div className="cyber-card rounded-2xl p-8 shadow-xl border border-insura-neon/20">
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold mb-2 insura-gradient-text">Verify Your Phone</h1>
-              <p className="text-gray-400">Enter the 6-digit code sent to {phone || "your phone"}</p>
+              <h1 className="text-2xl font-bold mb-2 insura-gradient-text">
+                Verify Your {verificationMethod === 'sms' ? 'Phone' : 'Email'}
+              </h1>
+              <p className="text-gray-400">
+                Enter the 6-digit code sent to {getVerificationTarget()}
+              </p>
             </div>
 
             {error && (
