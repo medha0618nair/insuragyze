@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import PremiumCalculatorPage from "./pages/PremiumCalculatorPage";
 import CoverageOptimizerPage from "./pages/CoverageOptimizerPage";
 import ChatAssistantPage from "./pages/ChatAssistantPage";
 import ClaimCheckerPage from "./pages/ClaimCheckerPage";
+import VerifyOTP from "./pages/VerifyOTP";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +35,7 @@ const App = () => (
           <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
           <Route path="/chat-assistant" element={<ChatAssistantPage />} />
           <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
+          <Route path="/verify-otp" element={<VerifyOTP />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

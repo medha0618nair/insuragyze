@@ -4,13 +4,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Lock, Mail, User, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User, AlertCircle, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const SignUp = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,15 @@ const SignUp = () => {
     checkSession();
   }, [navigate]);
 
+  const formatPhoneNumber = (input: string): string => {
+    // Ensure phone number is in E.164 format
+    let formatted = input.replace(/\D/g, '');
+    if (formatted.length > 0 && !formatted.startsWith('1')) {
+      formatted = '1' + formatted; // Add US country code if missing
+    }
+    return '+' + formatted;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -38,39 +48,65 @@ const SignUp = () => {
       setError('Passwords do not match');
       return;
     }
+
+    if (phone && !phone.startsWith('+')) {
+      setPhone(formatPhoneNumber(phone));
+    }
     
     setIsLoading(true);
 
     try {
-      // Sign up with Supabase
-      const { data, error } = await supabase.auth.signUp({
+      // First, sign up the user with email and password
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName,
+            phone: phone,
             avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
           }
         }
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
       
-      toast({
-        title: "Account created!",
-        description: "Welcome to InsuraAI. Your account has been created successfully.",
-      });
-      
-      // If email confirmation is required, show a message
-      if (!data.session) {
-        toast({
-          title: "Verify your email",
-          description: "Please check your email to verify your account before signing in.",
+      // If phone number provided, initiate SMS verification
+      if (phone && phone.length > 10) {
+        // Sign out from the email registration so we can do the phone verification
+        await supabase.auth.signOut();
+        
+        // Send OTP to the phone number
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          phone: phone
         });
-        navigate('/auth/signin');
+
+        if (otpError) throw otpError;
+        
+        toast({
+          title: "Verification code sent",
+          description: "Please check your phone for the verification code.",
+        });
+        
+        // Navigate to OTP verification page
+        navigate('/verify-otp', { state: { phone, email } });
       } else {
-        // User is automatically signed in, redirect to main page
-        navigate('/insurance-categories');
+        toast({
+          title: "Account created!",
+          description: "Welcome to InsuraAI. Your account has been created successfully.",
+        });
+        
+        // If email confirmation is required, show a message
+        if (!data.session) {
+          toast({
+            title: "Verify your email",
+            description: "Please check your email to verify your account before signing in.",
+          });
+          navigate('/auth/signin');
+        } else {
+          // User is automatically signed in, redirect to main page
+          navigate('/insurance-categories');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to create account. Please try again.');
@@ -140,6 +176,24 @@ const SignUp = () => {
                     placeholder="Enter your email"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-gray-300 text-sm font-medium mb-2">Phone Number (for verification)</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Phone className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                    placeholder="+1 (123) 456-7890"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Format: +1XXXXXXXXXX (include country code)</p>
               </div>
 
               <div>

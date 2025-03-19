@@ -4,13 +4,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
-import { Lock, Mail, User, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User, AlertCircle, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [signInMethod, setSignInMethod] = useState<'email' | 'phone'>('email');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -41,25 +43,56 @@ const SignIn = () => {
     };
   }, [navigate]);
 
+  const formatPhoneNumber = (input: string): string => {
+    // Ensure phone number is in E.164 format
+    let formatted = input.replace(/\D/g, '');
+    if (formatted.length > 0 && !formatted.startsWith('1')) {
+      formatted = '1' + formatted; // Add US country code if missing
+    }
+    return '+' + formatted;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      if (signInMethod === 'email') {
+        // Email and password sign in
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Sign in successful",
-        description: "Welcome back to InsuraAI!",
-      });
-      
-      navigate('/insurance-categories');
+        toast({
+          title: "Sign in successful",
+          description: "Welcome back to InsuraAI!",
+        });
+        
+        navigate('/insurance-categories');
+      } else {
+        // Phone OTP sign in
+        let formattedPhone = phone;
+        if (!phone.startsWith('+')) {
+          formattedPhone = formatPhoneNumber(phone);
+        }
+
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: formattedPhone
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Verification code sent",
+          description: "Please check your phone for the verification code.",
+        });
+        
+        navigate('/verify-otp', { state: { phone: formattedPhone } });
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to sign in. Please check your credentials and try again.');
       toast({
@@ -86,6 +119,29 @@ const SignIn = () => {
               <p className="text-gray-400">Access your personalized insurance dashboard</p>
             </div>
 
+            <div className="mb-6 flex rounded-md overflow-hidden">
+              <button
+                onClick={() => setSignInMethod('email')}
+                className={`flex-1 py-2 text-center ${
+                  signInMethod === 'email' 
+                    ? 'bg-insura-neon/20 text-insura-neon' 
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Email & Password
+              </button>
+              <button
+                onClick={() => setSignInMethod('phone')}
+                className={`flex-1 py-2 text-center ${
+                  signInMethod === 'phone' 
+                    ? 'bg-insura-neon/20 text-insura-neon' 
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Phone OTP
+              </button>
+            </div>
+
             {error && (
               <div className="mb-6 p-3 bg-red-900/30 border border-red-700/50 rounded-lg flex items-center text-red-400">
                 <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
@@ -94,60 +150,83 @@ const SignIn = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-gray-300 text-sm font-medium mb-2">Email Address</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="w-5 h-5 text-gray-500" />
+              {signInMethod === 'email' ? (
+                <>
+                  <div>
+                    <label htmlFor="email" className="block text-gray-300 text-sm font-medium mb-2">Email Address</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                        placeholder="Enter your email"
+                      />
+                    </div>
                   </div>
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
-                    placeholder="Enter your email"
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label htmlFor="password" className="block text-gray-300 text-sm font-medium mb-2">Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <label htmlFor="password" className="block text-gray-300 text-sm font-medium mb-2">Password</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                        placeholder="Enter your password"
+                      />
+                    </div>
                   </div>
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
-                    placeholder="Enter your password"
-                  />
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-insura-neon bg-gray-800 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
-                    Remember me
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <input
+                        id="remember-me"
+                        name="remember-me"
+                        type="checkbox"
+                        className="h-4 w-4 text-insura-neon bg-gray-800 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+                      />
+                      <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
+                        Remember me
+                      </label>
+                    </div>
+                    <div className="text-sm">
+                      <a href="#" className="text-insura-neon hover:underline">
+                        Forgot password?
+                      </a>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <label htmlFor="phone" className="block text-gray-300 text-sm font-medium mb-2">Phone Number</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Phone className="w-5 h-5 text-gray-500" />
+                    </div>
+                    <input
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                      className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+                      placeholder="+1 (123) 456-7890"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Format: +1XXXXXXXXXX (include country code)</p>
                 </div>
-                <div className="text-sm">
-                  <a href="#" className="text-insura-neon hover:underline">
-                    Forgot password?
-                  </a>
-                </div>
-              </div>
+              )}
 
               <ButtonCustom
                 variant="primary"
@@ -163,10 +242,10 @@ const SignIn = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Signing In...
+                    {signInMethod === 'email' ? 'Signing In...' : 'Sending Code...'}
                   </div>
                 ) : (
-                  'Sign In'
+                  signInMethod === 'email' ? 'Sign In' : 'Send Verification Code'
                 )}
               </ButtonCustom>
             </form>
