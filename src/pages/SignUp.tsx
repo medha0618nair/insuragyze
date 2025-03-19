@@ -34,9 +34,20 @@ const SignUp = () => {
   const formatPhoneNumber = (input: string): string => {
     // Ensure phone number is in E.164 format
     let formatted = input.replace(/\D/g, '');
-    if (formatted.length > 0 && !formatted.startsWith('1')) {
-      formatted = '1' + formatted; // Add US country code if missing
+    
+    // Check if it's an Indian number (10 digits with optional +91 prefix)
+    if (formatted.startsWith('91') && formatted.length >= 12) {
+      // Already has country code
+      return '+' + formatted;
+    } else if (formatted.length === 10) {
+      // Indian number without country code
+      return '+91' + formatted;
+    } else if (formatted.length > 0 && !formatted.startsWith('1')) {
+      // Handle US numbers as before
+      formatted = '1' + formatted;
+      return '+' + formatted;
     }
+    
     return '+' + formatted;
   };
 
@@ -49,9 +60,9 @@ const SignUp = () => {
       return;
     }
 
-    if (phone && !phone.startsWith('+')) {
-      setPhone(formatPhoneNumber(phone));
-    }
+    // Format the phone number properly before proceeding
+    const formattedPhone = formatPhoneNumber(phone);
+    setPhone(formattedPhone);
     
     setIsLoading(true);
 
@@ -63,7 +74,7 @@ const SignUp = () => {
         options: {
           data: {
             full_name: fullName,
-            phone: phone,
+            phone: formattedPhone,
             avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
           }
         }
@@ -72,13 +83,13 @@ const SignUp = () => {
       if (signUpError) throw signUpError;
       
       // If phone number provided, initiate SMS verification
-      if (phone && phone.length > 10) {
+      if (formattedPhone && formattedPhone.length > 10) {
         // Sign out from the email registration so we can do the phone verification
         await supabase.auth.signOut();
         
         // Send OTP to the phone number
         const { error: otpError } = await supabase.auth.signInWithOtp({
-          phone: phone
+          phone: formattedPhone
         });
 
         if (otpError) throw otpError;
@@ -89,7 +100,7 @@ const SignUp = () => {
         });
         
         // Navigate to OTP verification page
-        navigate('/verify-otp', { state: { phone, email } });
+        navigate('/verify-otp', { state: { phone: formattedPhone, email } });
       } else {
         toast({
           title: "Account created!",
@@ -109,6 +120,7 @@ const SignUp = () => {
         }
       }
     } catch (err: any) {
+      console.error("Sign up error:", err);
       setError(err.message || 'Failed to create account. Please try again.');
       toast({
         variant: "destructive",
