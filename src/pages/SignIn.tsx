@@ -5,8 +5,8 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Lock, Mail, User, AlertCircle } from 'lucide-react';
-import { signIn, getCurrentUser } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -18,10 +18,27 @@ const SignIn = () => {
 
   useEffect(() => {
     // Check if user is already logged in
-    const user = getCurrentUser();
-    if (user) {
-      navigate('/insurance-categories');
-    }
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/insurance-categories');
+      }
+    };
+    
+    checkSession();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          navigate('/insurance-categories');
+        }
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,18 +47,25 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      await signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Sign in successful",
         description: "Welcome back to InsuraAI!",
       });
+      
       navigate('/insurance-categories');
-    } catch (err) {
-      setError('Failed to sign in. Please check your credentials and try again.');
+    } catch (err: any) {
+      setError(err.message || 'Failed to sign in. Please check your credentials and try again.');
       toast({
         variant: "destructive",
         title: "Sign in failed",
-        description: "Please check your credentials and try again.",
+        description: err.message || "Please check your credentials and try again.",
       });
     } finally {
       setIsLoading(false);

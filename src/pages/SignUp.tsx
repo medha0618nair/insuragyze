@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { Lock, Mail, User, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const SignUp = () => {
   const [fullName, setFullName] = useState('');
@@ -17,7 +18,19 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate('/insurance-categories');
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -28,27 +41,47 @@ const SignUp = () => {
     
     setIsLoading(true);
 
-    // Simulate sign up process
-    setTimeout(() => {
-      // Store user data in localStorage for persistence
-      const user = {
-        id: `usr_${Math.random().toString(36).substr(2, 9)}`,
-        name: fullName,
-        email: email,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
-      };
-      
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('token', 'sample_jwt_token');
+    try {
+      // Sign up with Supabase
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
+          }
+        }
+      });
+
+      if (error) throw error;
       
       toast({
         title: "Account created!",
         description: "Welcome to InsuraAI. Your account has been created successfully.",
       });
       
+      // If email confirmation is required, show a message
+      if (!data.session) {
+        toast({
+          title: "Verify your email",
+          description: "Please check your email to verify your account before signing in.",
+        });
+        navigate('/auth/signin');
+      } else {
+        // User is automatically signed in, redirect to main page
+        navigate('/insurance-categories');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account. Please try again.');
+      toast({
+        variant: "destructive",
+        title: "Sign up failed",
+        description: err.message || "Please try again with different credentials.",
+      });
+    } finally {
       setIsLoading(false);
-      navigate('/insurance-categories');
-    }, 1500);
+    }
   };
 
   return (

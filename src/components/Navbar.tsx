@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 import { Menu, X, LogOut, User } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
 import { Link, useNavigate } from 'react-router-dom';
-import { signOut, getCurrentUser } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,27 +14,50 @@ const Navbar = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const currentUser = getCurrentUser();
-    setUser(currentUser);
+    // Get initial user session
+    const getInitialSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user || null);
+    };
+    
+    getInitialSession();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const handleSignOut = () => {
-    signOut();
-    setUser(null);
-    toast({
-      title: "Signed out",
-      description: "You have been signed out successfully",
-    });
-    
-    // Close the menu
-    setIsMenuOpen(false);
-    
-    // Navigate to home
-    navigate('/');
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully",
+      });
+      
+      // Close the menu
+      setIsMenuOpen(false);
+      
+      // Navigate to home
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: error.message || "An error occurred while signing out",
+      });
+    }
   };
 
   const scrollToSection = (id: string) => {
@@ -45,6 +68,10 @@ const Navbar = () => {
     // Close mobile menu after navigation
     setIsMenuOpen(false);
   };
+
+  // Get user name and avatar from Supabase user metadata
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userAvatar = user?.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`;
 
   return (
     <nav className="bg-black/95 backdrop-blur-md shadow-md border-b border-insura-neon/20 fixed w-full z-50">
@@ -87,9 +114,9 @@ const Navbar = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full overflow-hidden border border-insura-neon/30">
-                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
                   </div>
-                  <span className="text-gray-300">{user.name}</span>
+                  <span className="text-gray-300">{userName}</span>
                 </div>
                 <ButtonCustom 
                   variant="ghost" 
@@ -165,9 +192,9 @@ const Navbar = () => {
             <div className="pt-2 space-y-2">
               <div className="flex items-center space-x-2 px-3 py-2">
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-insura-neon/30">
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                  <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
                 </div>
-                <span className="text-gray-300">{user.name}</span>
+                <span className="text-gray-300">{userName}</span>
               </div>
               
               <button 
