@@ -1,6 +1,7 @@
 import { RecommendedPlan } from '@/types/insurance';
 
-const API_URL = 'http://localhost:3001/api';
+// Use environment variable or default to localhost for development
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export interface InsuranceFormData {
   fullName: string;
