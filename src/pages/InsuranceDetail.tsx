@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -58,18 +57,17 @@ const InsuranceDetail = () => {
     
     try {
       if (categoryId === 'health') {
-        // Use the recommendation model API for health insurance
         const modelParams: RecommendationModelParams = {
           Full_Name: formData.fullName,
           Age: parseInt(formData.age, 10),
-          Budget_in_INR: parseBudget(formData.budget),
+          Budget_in_INR: parseInt(formData.budget, 10),
           Zip_Code: formData.zipCode,
           Email: formData.email,
           Emergency_Services: formData.features.includes('Emergency Services'),
           Preventive_Care_and_Screenings: formData.features.includes('Preventive Care'),
           Hospital_Stays_and_Treatments: formData.features.includes('Hospital Coverage'),
           Prescription_Medication: formData.features.includes('Prescription Drugs'),
-          Smoking_Status: 'Non-Smoker', // Default
+          Smoking_Status: formData.smokingStatus || 'Non-Smoker',
           Pre_existing_Health_Conditions: formData.features.includes('Pre-existing Conditions')
         };
         
@@ -78,15 +76,12 @@ const InsuranceDetail = () => {
         const apiResponse = await fetchRecommendationModel(modelParams);
         console.log('Model API response:', apiResponse);
         
-        // Convert API response to our RecommendedPlan format
         const convertedPlans = apiResponse.map((plan, index) => {
-          // Extract benefits from any available fields
           const benefits = [];
           if (plan.Coverage_Details) benefits.push(plan.Coverage_Details);
           if (plan.Additional_Benefits) benefits.push(plan.Additional_Benefits);
           if (plan.Network_Type) benefits.push(plan.Network_Type);
           
-          // Add some default benefits if we don't have enough
           if (benefits.length < 3) {
             const defaultBenefits = [
               'Comprehensive coverage',
@@ -98,7 +93,6 @@ const InsuranceDetail = () => {
             }
           }
           
-          // Convert the plan data to our format
           return {
             id: `plan-${index + 1}`,
             name: plan.Plan_Name || `Health Plan ${index + 1}`,
@@ -116,12 +110,10 @@ const InsuranceDetail = () => {
         setRecommendedPlans(convertedPlans);
         setShowResults(true);
       } else if (isServerConnected) {
-        // Use the original API for other insurance types
         const plans = await fetchInsuranceRecommendations(categoryId || 'health', formData);
         setRecommendedPlans(plans);
         setShowResults(true);
       } else {
-        // Fallback to mock data if API is not available
         setTimeout(() => {
           const mockPlans: RecommendedPlan[] = [
             {
@@ -182,7 +174,6 @@ const InsuranceDetail = () => {
       console.error('Error fetching recommendations:', error);
       toast.error('Failed to fetch recommendations. Please try again.');
       
-      // Fallback to mock data in case of error
       const mockPlans: RecommendedPlan[] = [
         {
           id: '1',
@@ -226,18 +217,6 @@ const InsuranceDetail = () => {
       setShowResults(true);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Helper function to parse budget range to a numeric value
-  const parseBudget = (budgetRange: string): number => {
-    switch (budgetRange) {
-      case '0-50': return 4000;
-      case '50-100': return 8000;
-      case '100-200': return 15000;
-      case '200-300': return 20000;
-      case '300-1000': return 30000;
-      default: return 10000;
     }
   };
 

@@ -152,21 +152,20 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-white text-sm font-medium mb-2">Monthly Budget</label>
-          <select 
+          <label className="block text-white text-sm font-medium mb-2">Monthly Budget (in ₹)</label>
+          <input 
+            type="number" 
             name="budget"
             value={formData.budget}
             onChange={handleInputChange}
             className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon" 
+            placeholder="Enter your monthly budget in INR"
+            min="1000"
             required
-          >
-            <option value="">Select your budget range</option>
-            <option value="0-50">₹0 - ₹4,175 per month</option>
-            <option value="50-100">₹4,175 - ₹8,350 per month</option>
-            <option value="100-200">₹8,350 - ₹16,700 per month</option>
-            <option value="200-300">₹16,700 - ₹25,050 per month</option>
-            <option value="300-1000">₹25,050+ per month</option>
-          </select>
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Enter your maximum monthly budget in Indian Rupees (₹)
+          </p>
         </div>
 
         <div className="pt-4">
