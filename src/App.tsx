@@ -17,7 +17,6 @@ import ChatAssistantPage from "./pages/ChatAssistantPage";
 import ClaimCheckerPage from "./pages/ClaimCheckerPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import InsuranceRecommender from "./components/InsuranceRecommender";
-import FraudDetectionPage from "./pages/FraudDetectionPage";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +39,6 @@ const App = () => (
           <Route path="/chat-assistant" element={<ChatAssistantPage />} />
           <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
-          <Route path="/fraud-detection" element={<FraudDetectionPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
