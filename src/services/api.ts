@@ -2,7 +2,7 @@ import { RecommendedPlan } from '@/types/insurance';
 
 // Use environment variable or default to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/process-broucher'; // Updated endpoint to process-broucher
+const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/process_brochure'; // Updated to the correct endpoint path
 
 export interface InsuranceFormData {
   fullName: string;
@@ -114,7 +114,7 @@ export const fetchAIRecommendations = async (data: AIRecommendationData) => {
 
 export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
-    // Adding proper content type headers and using the updated endpoint
+    // Adding proper content type headers and using the correct endpoint
     const response = await fetch(DOC_ANALYSIS_API, {
       method: 'POST',
       headers: {
