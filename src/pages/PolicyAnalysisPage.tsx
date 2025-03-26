@@ -79,6 +79,7 @@ const PolicyAnalysisPage = () => {
                   isAnalyzing={isAnalyzing}
                   file={file}
                   onReset={handleReset}
+                  onAnalyze={handleAnalyzeDocument}
                 />
               </div>
             </div>

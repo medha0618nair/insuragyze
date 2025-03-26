@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DocumentUploaderProps {
   onUpload: (file: File) => Promise<void>;
+  onAnalyze: () => Promise<void>;
   isAnalyzing: boolean;
   file: File | null;
   onReset: () => void;
@@ -13,6 +14,7 @@ interface DocumentUploaderProps {
 
 const DocumentUploader: React.FC<DocumentUploaderProps> = ({
   onUpload,
+  onAnalyze,
   isAnalyzing,
   file,
   onReset
@@ -126,7 +128,7 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
               variant="primary" 
               size="md"
               className="bg-gradient-to-r from-insura-neon to-insura-purple"
-              onClick={() => onUpload(file)}
+              onClick={onAnalyze}
               disabled={isAnalyzing}
             >
               {isAnalyzing ? (
