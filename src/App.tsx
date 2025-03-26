@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from './components/ui/toaster';
-import { SonnerToaster } from './components/ui/sonner';
+import { Toaster as SonnerToaster } from './components/ui/sonner';
 
 // Import pages
 import Index from './pages/Index';

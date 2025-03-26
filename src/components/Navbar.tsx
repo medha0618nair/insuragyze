@@ -196,3 +196,6 @@ export const Navbar = () => {
     </nav>
   );
 };
+
+// Add default export
+export default Navbar;
