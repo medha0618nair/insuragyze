@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -58,7 +59,7 @@ const PolicyAnalysisPage = () => {
     
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('document', file); // Updated field name to 'document'
       
       const result = await analyzePolicyDocument(formData);
       setAnalysisResult(result);

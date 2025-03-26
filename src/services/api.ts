@@ -1,8 +1,9 @@
+
 import { RecommendedPlan } from '@/types/insurance';
 
 // Use environment variable or default to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/docs';
+const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/analyze'; // Updated endpoint
 
 export interface InsuranceFormData {
   fullName: string;
@@ -114,13 +115,20 @@ export const fetchAIRecommendations = async (data: AIRecommendationData) => {
 
 export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
+    // Adding proper content type headers and using the correct endpoint
     const response = await fetch(DOC_ANALYSIS_API, {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+      },
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to analyze policy: ${response.statusText}`);
+      // For debugging - check what error message we're getting
+      const errorText = await response.text();
+      console.log("API Error response:", errorText);
+      throw new Error(`Failed to analyze policy: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -129,15 +137,16 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
       throw new Error(result.error || 'Failed to analyze policy');
     }
     
+    // Map the API response to our expected format
     return {
       summary: {
-        coverageAmount: result.data.coverage?.amount || 250000,
-        personalProperty: result.data.coverage?.personalProperty || 100000,
-        liability: result.data.coverage?.liability || 300000,
-        waterDamageCovered: result.data.coverage?.includes?.waterDamage || false,
-        theftCovered: result.data.coverage?.includes?.theft || true,
+        coverageAmount: result.data?.coverage?.amount || 250000,
+        personalProperty: result.data?.coverage?.personalProperty || 100000,
+        liability: result.data?.coverage?.liability || 300000,
+        waterDamageCovered: result.data?.coverage?.includes?.waterDamage || false,
+        theftCovered: result.data?.coverage?.includes?.theft || true,
       },
-      exclusions: result.data.exclusions || [
+      exclusions: result.data?.exclusions || [
         "Flood damage",
         "Earthquake damage",
         "Neglect or intentional damage",
@@ -145,10 +154,10 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
         "Government action"
       ],
       deductibles: {
-        standard: result.data.deductibles?.standard || 1000,
-        windHail: result.data.deductibles?.windHail || "2% of dwelling coverage",
+        standard: result.data?.deductibles?.standard || 1000,
+        windHail: result.data?.deductibles?.windHail || "2% of dwelling coverage",
       },
-      recommendations: result.data.recommendations || [
+      recommendations: result.data?.recommendations || [
         {
           type: "warning",
           title: "Increase Liability Coverage",
