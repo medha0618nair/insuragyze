@@ -22,7 +22,8 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
     age: '',
     zipCode: '',
     features: [],
-    budget: ''
+    budget: '',
+    smokingStatus: 'Non-Smoker'
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -113,6 +114,21 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
             />
           </div>
         </div>
+
+        {categoryInfo.id === 'health' && (
+          <div>
+            <label className="block text-white text-sm font-medium mb-2">Smoking Status</label>
+            <select 
+              name="smokingStatus"
+              value={formData.smokingStatus}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 rounded-lg bg-gray-900 border border-gray-700 text-white focus:border-insura-neon focus:ring-1 focus:ring-insura-neon"
+            >
+              <option value="Non-Smoker">Non-Smoker</option>
+              <option value="Smoker">Smoker</option>
+            </select>
+          </div>
+        )}
 
         <div>
           <label className="block text-white text-sm font-medium mb-2">Which features are most important to you?</label>

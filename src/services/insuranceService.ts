@@ -1,3 +1,4 @@
+
 import { RecommendedPlan } from '@/types/insurance';
 import { API_URL, RECOMMENDATION_MODEL_API } from './apiConfig';
 
@@ -8,6 +9,7 @@ export interface InsuranceFormData {
   zipCode: string;
   features: string[];
   budget: string;
+  smokingStatus?: string;
 }
 
 export interface AIRecommendationData {

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import CoverageOptimizerPage from "./pages/CoverageOptimizerPage";
 import ChatAssistantPage from "./pages/ChatAssistantPage";
 import ClaimCheckerPage from "./pages/ClaimCheckerPage";
 import VerifyOTP from "./pages/VerifyOTP";
+import InsuranceRecommender from "./components/InsuranceRecommender";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/insurance-categories" element={<InsuranceCategories />} />
           <Route path="/insurance/:categoryId" element={<InsuranceDetail />} />
+          <Route path="/insurance-recommender" element={<InsuranceRecommender />} />
           <Route path="/auth/signin" element={<SignIn />} />
           <Route path="/auth/signup" element={<SignUp />} />
           <Route path="/tools/policy-analysis" element={<PolicyAnalysisPage />} />

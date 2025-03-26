@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -11,7 +12,13 @@ import InsuranceForm from '@/components/insurance/InsuranceForm';
 import ResultsHeader from '@/components/insurance/ResultsHeader';
 import PlanCard from '@/components/insurance/PlanCard';
 import WhyRecommendations from '@/components/insurance/WhyRecommendations';
-import { fetchInsuranceRecommendations, InsuranceFormData, checkServerHealth } from '@/services/api';
+import { 
+  fetchInsuranceRecommendations, 
+  InsuranceFormData, 
+  checkServerHealth,
+  fetchRecommendationModel,
+  RecommendationModelParams
+} from '@/services/api';
 import { toast } from 'sonner';
 
 const InsuranceDetail = () => {
@@ -50,11 +57,71 @@ const InsuranceDetail = () => {
     setIsLoading(true);
     
     try {
-      if (isServerConnected) {
+      if (categoryId === 'health') {
+        // Use the recommendation model API for health insurance
+        const modelParams: RecommendationModelParams = {
+          Full_Name: formData.fullName,
+          Age: parseInt(formData.age, 10),
+          Budget_in_INR: parseBudget(formData.budget),
+          Zip_Code: formData.zipCode,
+          Email: formData.email,
+          Emergency_Services: formData.features.includes('Emergency Services'),
+          Preventive_Care_and_Screenings: formData.features.includes('Preventive Care'),
+          Hospital_Stays_and_Treatments: formData.features.includes('Hospital Coverage'),
+          Prescription_Medication: formData.features.includes('Prescription Drugs'),
+          Smoking_Status: 'Non-Smoker', // Default
+          Pre_existing_Health_Conditions: formData.features.includes('Pre-existing Conditions')
+        };
+        
+        console.log('Submitting to recommendation model:', modelParams);
+        
+        const apiResponse = await fetchRecommendationModel(modelParams);
+        console.log('Model API response:', apiResponse);
+        
+        // Convert API response to our RecommendedPlan format
+        const convertedPlans = apiResponse.map((plan, index) => {
+          // Extract benefits from any available fields
+          const benefits = [];
+          if (plan.Coverage_Details) benefits.push(plan.Coverage_Details);
+          if (plan.Additional_Benefits) benefits.push(plan.Additional_Benefits);
+          if (plan.Network_Type) benefits.push(plan.Network_Type);
+          
+          // Add some default benefits if we don't have enough
+          if (benefits.length < 3) {
+            const defaultBenefits = [
+              'Comprehensive coverage',
+              'Standard network access',
+              'Basic preventive care'
+            ];
+            for (let i = benefits.length; i < 3; i++) {
+              benefits.push(defaultBenefits[i]);
+            }
+          }
+          
+          // Convert the plan data to our format
+          return {
+            id: `plan-${index + 1}`,
+            name: plan.Plan_Name || `Health Plan ${index + 1}`,
+            provider: plan.Insurance_Provider || 'Insurance Provider',
+            monthlyPremium: `$${(plan.Monthly_Premium / 83.5).toFixed(2)}`,
+            monthlyPremiumINR: `₹${plan.Monthly_Premium?.toFixed(2) || '0.00'}`,
+            coverageAmount: `$${(plan.Coverage_Amount / 83.5).toLocaleString()}`,
+            coverageAmountINR: `₹${plan.Coverage_Amount?.toLocaleString() || '0'}`,
+            benefits: benefits,
+            suitabilityScore: plan.Match_Score || (95 - index * 7),
+            description: plan.Plan_Description || 'A comprehensive health insurance plan'
+          };
+        });
+        
+        setRecommendedPlans(convertedPlans);
+        setShowResults(true);
+      } else if (isServerConnected) {
+        // Use the original API for other insurance types
         const plans = await fetchInsuranceRecommendations(categoryId || 'health', formData);
         setRecommendedPlans(plans);
         setShowResults(true);
       } else {
+        // Fallback to mock data if API is not available
         setTimeout(() => {
           const mockPlans: RecommendedPlan[] = [
             {
@@ -114,8 +181,63 @@ const InsuranceDetail = () => {
     } catch (error) {
       console.error('Error fetching recommendations:', error);
       toast.error('Failed to fetch recommendations. Please try again.');
+      
+      // Fallback to mock data in case of error
+      const mockPlans: RecommendedPlan[] = [
+        {
+          id: '1',
+          name: `Premium ${categoryInfo.name} Plan`,
+          provider: 'Secure Life Insurance',
+          monthlyPremium: '$285',
+          monthlyPremiumINR: '₹23,798',
+          coverageAmount: '$300,000',
+          coverageAmountINR: '₹25,050,000',
+          benefits: ['Comprehensive coverage', '24/7 support', 'Fast claims processing', 'No waiting period'],
+          suitabilityScore: 95,
+          description: `Top-tier ${categoryInfo.name.toLowerCase()} plan with extensive benefits.`
+        },
+        {
+          id: '2',
+          name: `Standard ${categoryInfo.name} Plan`,
+          provider: 'SafeGuard Insurance',
+          monthlyPremium: '$195',
+          monthlyPremiumINR: '₹15,595',
+          coverageAmount: '$200,000',
+          coverageAmountINR: '₹18,110,000',
+          benefits: ['Essential coverage', 'Customizable options', 'Family discount available'],
+          suitabilityScore: 87,
+          description: `Well-balanced ${categoryInfo.name.toLowerCase()} protection for most needs.`
+        },
+        {
+          id: '3',
+          name: `Basic ${categoryInfo.name} Plan`,
+          provider: 'TrustWorthy Insurance',
+          monthlyPremium: '$120',
+          monthlyPremiumINR: '₹9,792',
+          coverageAmount: '$100,000',
+          coverageAmountINR: '₹12,318,000',
+          benefits: ['Affordable protection', 'Easy application', 'Quick approval'],
+          suitabilityScore: 75,
+          description: `Budget-friendly ${categoryInfo.name.toLowerCase()} option without compromising essential protection.`
+        }
+      ];
+      
+      setRecommendedPlans(mockPlans);
+      setShowResults(true);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function to parse budget range to a numeric value
+  const parseBudget = (budgetRange: string): number => {
+    switch (budgetRange) {
+      case '0-50': return 4000;
+      case '50-100': return 8000;
+      case '100-200': return 15000;
+      case '200-300': return 20000;
+      case '300-1000': return 30000;
+      default: return 10000;
     }
   };
 
