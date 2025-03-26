@@ -8,18 +8,25 @@ import {
   Shield, 
   ThumbsUp, 
   Filter,
+  TrendingUp,
+  Info,
+  Star
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { fetchRecommendationModel, RecommendationModelParams } from '@/services/insuranceService';
 
 interface FormData {
+  fullName: string;
   age: string;
-  gender: string;
-  occupation: string;
-  income: string;
-  medicalHistory: string[];
-  familySize: string;
-  location: string;
-  coverage: string[];
+  email: string;
+  zipCode: string;
   budget: string;
+  emergencyServices: boolean;
+  preventiveCare: boolean;
+  hospitalStays: boolean;
+  prescriptionMedication: boolean;
+  smokingStatus: string;
+  preExistingConditions: boolean;
 }
 
 interface RecommendedPlan {
@@ -37,17 +44,20 @@ const InsuranceRecommender = () => {
   const [step, setStep] = useState<'form' | 'results'>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
+    fullName: '',
     age: '',
-    gender: '',
-    occupation: '',
-    income: '',
-    medicalHistory: [],
-    familySize: '',
-    location: '',
-    coverage: [],
+    email: '',
+    zipCode: '',
     budget: '',
+    emergencyServices: false,
+    preventiveCare: false,
+    hospitalStays: false,
+    prescriptionMedication: false,
+    smokingStatus: 'Non-Smoker',
+    preExistingConditions: false
   });
   const [recommendedPlans, setRecommendedPlans] = useState<RecommendedPlan[]>([]);
+  const [apiResponse, setApiResponse] = useState<any>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -55,27 +65,100 @@ const InsuranceRecommender = () => {
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, checked } = e.target;
-    
-    setFormData((prev) => {
-      if (checked) {
-        return { ...prev, [name]: [...prev[name as keyof FormData] as string[], value] };
-      } else {
-        return { 
-          ...prev, 
-          [name]: (prev[name as keyof FormData] as string[]).filter(item => item !== value) 
-        };
-      }
-    });
+    const { name, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call with a timeout
-    setTimeout(() => {
-      // Mock AI-filtered insurance plans based on user data
+    try {
+      // Prepare params for the recommendation model API
+      const modelParams: RecommendationModelParams = {
+        Full_Name: formData.fullName,
+        Age: parseInt(formData.age, 10),
+        Budget_in_INR: parseInt(formData.budget, 10),
+        Zip_Code: formData.zipCode,
+        Email: formData.email,
+        Emergency_Services: formData.emergencyServices,
+        Preventive_Care_and_Screenings: formData.preventiveCare,
+        Hospital_Stays_and_Treatments: formData.hospitalStays,
+        Prescription_Medication: formData.prescriptionMedication,
+        Smoking_Status: formData.smokingStatus,
+        Pre_existing_Health_Conditions: formData.preExistingConditions
+      };
+      
+      console.log('Submitting model parameters:', modelParams);
+      
+      // Call the API
+      const response = await fetchRecommendationModel(modelParams);
+      console.log('API response:', response);
+      setApiResponse(response);
+      
+      // Transform the API response into our application's format
+      let transformedPlans: RecommendedPlan[] = [];
+      
+      if (response && Array.isArray(response)) {
+        transformedPlans = response.map((plan: any, index: number) => ({
+          id: `plan-${index + 1}`,
+          name: plan.Plan_Name || `Health Plan ${index + 1}`,
+          provider: plan.Insurance_Provider || 'Insurance Provider',
+          monthlyPremium: `$${plan.Monthly_Premium || '0'}`,
+          coverageAmount: `$${plan.Coverage_Amount || '0'}`,
+          benefits: [
+            plan.Coverage_Details || 'Comprehensive coverage',
+            plan.Additional_Benefits || 'Standard benefits',
+            plan.Network_Type || 'Standard network'
+          ].filter(Boolean),
+          suitabilityScore: plan.Match_Score || (95 - index * 7),
+          description: plan.Plan_Description || 'A comprehensive health insurance plan.'
+        }));
+      } else {
+        // Fallback to mock data if API doesn't return expected format
+        toast.warning("Using sample data due to API format issues");
+        transformedPlans = [
+          {
+            id: '1',
+            name: 'Premium Health Plus',
+            provider: 'BlueCross Insurance',
+            monthlyPremium: '$285',
+            coverageAmount: '$1,000,000',
+            benefits: ['Comprehensive hospital coverage', 'Mental health support', 'Preventive care', 'Prescription drugs', 'Specialist visits'],
+            suitabilityScore: 95,
+            description: 'Ideal for professionals with high income seeking comprehensive coverage.'
+          },
+          {
+            id: '2',
+            name: 'Family Shield Plan',
+            provider: 'Harmony Health',
+            monthlyPremium: '$340',
+            coverageAmount: '$800,000',
+            benefits: ['Family doctor visits', 'Maternity care', 'Child wellness', 'Emergency services', 'Dental basics'],
+            suitabilityScore: 88,
+            description: 'Perfect for families with children, including special coverage for maternity and pediatric care.'
+          },
+          {
+            id: '3',
+            name: 'Essential Coverage',
+            provider: 'UniHealth',
+            monthlyPremium: '$195',
+            coverageAmount: '$500,000',
+            benefits: ['Hospital care', 'Emergency services', 'Basic diagnostic tests', 'Limited specialist visits'],
+            suitabilityScore: 75,
+            description: 'Budget-friendly option that covers essential health needs without premium features.'
+          },
+        ];
+      }
+
+      setRecommendedPlans(transformedPlans);
+      setStep('results');
+      
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      toast.error('Failed to fetch recommendations. Please try again.');
+      
+      // Use mock data as fallback
       const mockRecommendations: RecommendedPlan[] = [
         {
           id: '1',
@@ -108,16 +191,18 @@ const InsuranceRecommender = () => {
           description: 'Budget-friendly option that covers essential health needs without premium features.'
         },
       ];
-
+      
       setRecommendedPlans(mockRecommendations);
-      setIsLoading(false);
       setStep('results');
-    }, 2000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const resetForm = () => {
     setStep('form');
     setRecommendedPlans([]);
+    setApiResponse(null);
   };
 
   return (
@@ -141,6 +226,32 @@ const InsuranceRecommender = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
+                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      name="fullName"
+                      required
+                      value={formData.fullName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
                     <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">Age</label>
                     <input
                       type="number"
@@ -156,158 +267,121 @@ const InsuranceRecommender = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                    <select
-                      id="gender"
-                      name="gender"
-                      required
-                      value={formData.gender}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="non-binary">Non-binary</option>
-                      <option value="prefer-not-to-say">Prefer not to say</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="occupation" className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                    <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
                     <input
                       type="text"
-                      id="occupation"
-                      name="occupation"
+                      id="zipCode"
+                      name="zipCode"
                       required
-                      value={formData.occupation}
+                      value={formData.zipCode}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="income" className="block text-sm font-medium text-gray-700 mb-1">Annual Income (USD)</label>
-                    <select
-                      id="income"
-                      name="income"
-                      required
-                      value={formData.income}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
-                    >
-                      <option value="">Select income range</option>
-                      <option value="below-30k">Below $30,000</option>
-                      <option value="30k-50k">$30,000 - $50,000</option>
-                      <option value="50k-80k">$50,000 - $80,000</option>
-                      <option value="80k-120k">$80,000 - $120,000</option>
-                      <option value="above-120k">Above $120,000</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="familySize" className="block text-sm font-medium text-gray-700 mb-1">Family Size</label>
-                    <select
-                      id="familySize"
-                      name="familySize"
-                      required
-                      value={formData.familySize}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
-                    >
-                      <option value="">Select family size</option>
-                      <option value="1">Just me</option>
-                      <option value="2">2 people</option>
-                      <option value="3">3 people</option>
-                      <option value="4">4 people</option>
-                      <option value="5+">5+ people</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">Budget (in INR)</label>
                     <input
-                      type="text"
-                      id="location"
-                      name="location"
-                      placeholder="City, State"
-                      required
-                      value={formData.location}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">Monthly Budget (USD)</label>
-                    <select
+                      type="number"
                       id="budget"
                       name="budget"
                       required
+                      min="1000"
                       value={formData.budget}
                       onChange={handleInputChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
+                      placeholder="Enter budget in INR"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="smokingStatus" className="block text-sm font-medium text-gray-700 mb-1">Smoking Status</label>
+                    <select
+                      id="smokingStatus"
+                      name="smokingStatus"
+                      required
+                      value={formData.smokingStatus}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-insura-blue focus:border-transparent"
                     >
-                      <option value="">Select budget range</option>
-                      <option value="below-150">Below $150</option>
-                      <option value="150-300">$150 - $300</option>
-                      <option value="300-500">$300 - $500</option>
-                      <option value="500-800">$500 - $800</option>
-                      <option value="above-800">Above $800</option>
+                      <option value="Non-Smoker">Non-Smoker</option>
+                      <option value="Smoker">Smoker</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">Medical History (select all that apply)</label>
+                  <label className="block text-sm font-medium text-gray-700">Health Preferences</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {['Diabetes', 'Heart Disease', 'Cancer', 'Asthma', 'High Blood Pressure', 'None'].map((condition) => (
-                      <div key={condition} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`medical-${condition}`}
-                          name="medicalHistory"
-                          value={condition.toLowerCase()}
-                          checked={formData.medicalHistory.includes(condition.toLowerCase())}
-                          onChange={handleCheckboxChange}
-                          className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
-                        />
-                        <label htmlFor={`medical-${condition}`} className="ml-2 text-sm text-gray-700">
-                          {condition}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="block text-sm font-medium text-gray-700">Coverage Preferences (select all that apply)</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {[
-                      'Hospital Care', 
-                      'Prescription Drugs', 
-                      'Mental Health', 
-                      'Dental', 
-                      'Vision', 
-                      'Maternity',
-                      'Specialist Visits',
-                      'Physical Therapy'
-                    ].map((coverage) => (
-                      <div key={coverage} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          id={`coverage-${coverage}`}
-                          name="coverage"
-                          value={coverage.toLowerCase()}
-                          checked={formData.coverage.includes(coverage.toLowerCase())}
-                          onChange={handleCheckboxChange}
-                          className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
-                        />
-                        <label htmlFor={`coverage-${coverage}`} className="ml-2 text-sm text-gray-700">
-                          {coverage}
-                        </label>
-                      </div>
-                    ))}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="emergencyServices"
+                        name="emergencyServices"
+                        checked={formData.emergencyServices}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
+                      />
+                      <label htmlFor="emergencyServices" className="ml-2 text-sm text-gray-700">
+                        Emergency Services
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="preventiveCare"
+                        name="preventiveCare"
+                        checked={formData.preventiveCare}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
+                      />
+                      <label htmlFor="preventiveCare" className="ml-2 text-sm text-gray-700">
+                        Preventive Care and Screenings
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="hospitalStays"
+                        name="hospitalStays"
+                        checked={formData.hospitalStays}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
+                      />
+                      <label htmlFor="hospitalStays" className="ml-2 text-sm text-gray-700">
+                        Hospital Stays and Treatments
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="prescriptionMedication"
+                        name="prescriptionMedication"
+                        checked={formData.prescriptionMedication}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
+                      />
+                      <label htmlFor="prescriptionMedication" className="ml-2 text-sm text-gray-700">
+                        Prescription Medication
+                      </label>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="preExistingConditions"
+                        name="preExistingConditions"
+                        checked={formData.preExistingConditions}
+                        onChange={handleCheckboxChange}
+                        className="h-4 w-4 text-insura-blue focus:ring-insura-blue border-gray-300 rounded"
+                      />
+                      <label htmlFor="preExistingConditions" className="ml-2 text-sm text-gray-700">
+                        Pre-existing Health Conditions
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -362,7 +436,7 @@ const InsuranceRecommender = () => {
                   </ButtonCustom>
                 </div>
                 <p className="mt-3 text-gray-600">
-                  Based on your profile as a {formData.age}-year-old {formData.occupation} with a family of {formData.familySize}, 
+                  Based on your profile as a {formData.age}-year-old {formData.smokingStatus.toLowerCase()}, 
                   here are your top insurance matches ranked by suitability.
                 </p>
               </div>
@@ -451,11 +525,11 @@ const InsuranceRecommender = () => {
                 <ul className="space-y-2">
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Your age and family composition</span>
+                    <span className="text-gray-700">Your age and health preferences</span>
                   </li>
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Medical history and specific coverage needs</span>
+                    <span className="text-gray-700">Smoking status and pre-existing conditions</span>
                   </li>
                   <li className="flex items-start">
                     <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
