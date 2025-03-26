@@ -7,11 +7,11 @@ body {
 
 /* Glass effects */
 .glass-card {
-  @apply bg-black/40 backdrop-blur-md border border-gray-800 shadow-lg;
+  @apply bg-black/40 backdrop-blur-md border border-insura-neon/20 shadow-lg;
 }
 
 .neo-blur {
-  @apply backdrop-blur-lg bg-black/60 border border-gray-800 shadow-md;
+  @apply backdrop-blur-lg bg-black/60 border border-insura-neon/20 shadow-md;
 }
 
 /* Animation classes */
@@ -33,4 +33,77 @@ body {
 
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Cyber-tech theme specific animations and effects */
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.7), 0 0 15px rgba(0, 240, 255, 0.5);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+.neon-flicker {
+  animation: neon-flicker 3s infinite alternate;
+}
+
+@keyframes cyber-scan-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.cyber-scan-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-scan-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(to right, transparent, #00F0FF, transparent);
+  animation: cyber-scan-line 2s linear infinite;
+  z-index: 1;
+}
+
+.cyber-text {
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cyber-panel {
+  @apply bg-black border-2 border-insura-neon/30 rounded-lg shadow-lg;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
+}
+
+.cyber-input {
+  @apply bg-black/60 border border-insura-neon/40 rounded-md text-white p-2;
+  box-shadow: 0 0 5px rgba(0, 240, 255, 0.2);
+}
+
+.cyber-input:focus {
+  @apply outline-none border-insura-neon;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+.cyber-dots-bg {
+  background-image: radial-gradient(circle, rgba(0, 240, 255, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.cyber-grid-bg {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
 }
