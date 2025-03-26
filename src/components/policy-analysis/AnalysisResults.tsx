@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp } from 'lucide-react';
+import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
@@ -19,8 +19,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     coverage: true,
     exclusions: false,
+    benefits: false,
+    loopholes: false,
     deductibles: false,
-    recommendations: true
+    recommendations: true,
+    rawData: false
   });
 
   const toggleSection = (section: string) => {
@@ -135,6 +138,37 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
+          {/* Benefits Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('benefits')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <CheckCircle className="w-5 h-5 mr-2" /> Key Benefits
+              </h3>
+              {expandedSections.benefits ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.benefits && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <ul className="space-y-2">
+                    {result.benefits?.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                        <span className="text-gray-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
           {/* Exclusions Section */}
           <div className="space-y-4">
             <div 
@@ -157,6 +191,37 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                     {result.exclusions.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
+                        <span className="text-gray-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          {/* Loopholes Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('loopholes')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <AlertCircle className="w-5 h-5 mr-2" /> Potential Loopholes
+              </h3>
+              {expandedSections.loopholes ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.loopholes && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <ul className="space-y-2">
+                    {result.loopholes?.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <AlertCircle className="w-4 h-4 text-red-500 mr-2 mt-1 flex-shrink-0" />
                         <span className="text-gray-300">{item}</span>
                       </li>
                     ))}
@@ -208,6 +273,32 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                       </TableRow>
                     </TableBody>
                   </Table>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          {/* Raw API Response Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('rawData')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <Code className="w-5 h-5 mr-2" /> Raw API Response
+              </h3>
+              {expandedSections.rawData ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.rawData && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <pre className="bg-black/50 p-4 rounded overflow-auto text-xs text-gray-300 max-h-96">
+                    {result.rawApiResponse ? JSON.stringify(result.rawApiResponse, null, 2) : 'No raw data available'}
+                  </pre>
                 </CardContent>
               </Card>
             )}

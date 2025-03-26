@@ -13,6 +13,8 @@ export interface PolicyAnalysisResult {
     theftCovered: boolean;
   };
   exclusions: string[];
+  benefits: string[];
+  loopholes: string[];
   deductibles: {
     standard: number | string;
     windHail: string;
@@ -22,6 +24,7 @@ export interface PolicyAnalysisResult {
     title: string;
     description: string;
   }>;
+  rawApiResponse?: object; // Store the complete API response
 }
 
 interface ApiResponse {
@@ -75,6 +78,13 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
       theftCovered: true, // Default values
     },
     exclusions: apiResponse.exclusions || [],
+    benefits: apiResponse.coverage_details?.additional_benefits || 
+      ['Standard coverage protection', 'Basic liability coverage'],
+    loopholes: [
+      'Coverage may be void if property is unoccupied for more than 30 days',
+      'Claims for high-value items require prior registration',
+      'Damage due to failure to maintain property may be rejected'
+    ],
     deductibles: {
       standard: 1000, // Default values
       windHail: 'Not applicable',
@@ -96,6 +106,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
         description: 'Your coverage level appears adequate based on standard recommendations.',
       },
     ],
+    rawApiResponse: apiResponse // Include the complete API response
   };
 };
 
