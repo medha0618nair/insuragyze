@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -40,7 +39,6 @@ const PolicyAnalysisPage = () => {
   };
 
   const handleSelectFileClick = () => {
-    // Programmatically click the file input
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -60,7 +58,7 @@ const PolicyAnalysisPage = () => {
     
     try {
       const formData = new FormData();
-      formData.append('policyFile', file);
+      formData.append('file', file);
       
       const result = await analyzePolicyDocument(formData);
       setAnalysisResult(result);
@@ -199,7 +197,6 @@ const PolicyAnalysisPage = () => {
                     </div>
                   )}
                   
-                  {/* Hidden file input */}
                   <input 
                     ref={fileInputRef}
                     id="file-upload" 
@@ -320,7 +317,6 @@ const PolicyAnalysisPage = () => {
                   size="lg"
                   className="bg-gradient-to-r from-insura-neon to-insura-purple"
                   onClick={() => {
-                    // Download functionality would go here
                     toast({
                       title: "Download Started",
                       description: "Your policy summary is downloading",

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ButtonCustom } from './ui/button-custom';
 import { Upload, FileType, FileText, CheckCircle, AlertCircle } from 'lucide-react';
@@ -52,7 +51,7 @@ const PolicyAnalyzer = () => {
     
     try {
       const formData = new FormData();
-      formData.append('policyFile', file);
+      formData.append('file', file);
       
       const result = await analyzePolicyDocument(formData);
       setAnalysisResult(result);

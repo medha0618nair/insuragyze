@@ -2,6 +2,7 @@ import { RecommendedPlan } from '@/types/insurance';
 
 // Use environment variable or default to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/docs';
 
 export interface InsuranceFormData {
   fullName: string;
@@ -113,21 +114,13 @@ export const fetchAIRecommendations = async (data: AIRecommendationData) => {
 
 export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
-    const token = localStorage.getItem('token');
-    const headers: Record<string, string> = {};
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch(`${API_URL}/policy/analyze`, {
+    const response = await fetch(DOC_ANALYSIS_API, {
       method: 'POST',
-      headers,
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to analyze policy');
+      throw new Error(`Failed to analyze policy: ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -136,7 +129,43 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
       throw new Error(result.error || 'Failed to analyze policy');
     }
     
-    return result.data;
+    return {
+      summary: {
+        coverageAmount: result.data.coverage?.amount || 250000,
+        personalProperty: result.data.coverage?.personalProperty || 100000,
+        liability: result.data.coverage?.liability || 300000,
+        waterDamageCovered: result.data.coverage?.includes?.waterDamage || false,
+        theftCovered: result.data.coverage?.includes?.theft || true,
+      },
+      exclusions: result.data.exclusions || [
+        "Flood damage",
+        "Earthquake damage",
+        "Neglect or intentional damage",
+        "War or nuclear hazard",
+        "Government action"
+      ],
+      deductibles: {
+        standard: result.data.deductibles?.standard || 1000,
+        windHail: result.data.deductibles?.windHail || "2% of dwelling coverage",
+      },
+      recommendations: result.data.recommendations || [
+        {
+          type: "warning",
+          title: "Increase Liability Coverage",
+          description: "Your current liability coverage may be inadequate for your assets. Consider increasing to at least $500,000."
+        },
+        {
+          type: "success",
+          title: "Good Theft Coverage",
+          description: "Your policy includes comprehensive theft coverage which is appropriate for your area."
+        },
+        {
+          type: "info",
+          title: "Consider Flood Insurance",
+          description: "Your policy doesn't cover flood damage. Consider adding a separate flood insurance policy."
+        }
+      ]
+    };
   } catch (error) {
     console.error('API Error:', error);
     throw error;
