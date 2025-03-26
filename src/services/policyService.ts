@@ -19,6 +19,7 @@ export interface PolicyAnalysisResult {
     windHail: string;
   };
   recommendations: Array<{
+    // Update the type to allow "warning", "success", and "info"
     type: 'warning' | 'success' | 'info';
     title: string;
     description: string;

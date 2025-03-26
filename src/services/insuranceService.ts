@@ -1,6 +1,5 @@
-
 import { RecommendedPlan } from '@/types/insurance';
-import { API_URL } from './apiConfig';
+import { API_URL, RECOMMENDATION_MODEL_API } from './apiConfig';
 
 export interface InsuranceFormData {
   fullName: string;
@@ -32,8 +31,6 @@ export interface RecommendationModelParams {
   Smoking_Status: string;
   Pre_existing_Health_Conditions: boolean;
 }
-
-export const RECOMMENDATION_MODEL_API = 'https://rec-model2.onrender.com/recommend';
 
 export const fetchInsuranceRecommendations = async (
   categoryId: string,
