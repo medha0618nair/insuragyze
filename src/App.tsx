@@ -17,31 +17,34 @@ import ChatAssistantPage from "./pages/ChatAssistantPage";
 import ClaimCheckerPage from "./pages/ClaimCheckerPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import InsuranceRecommender from "./components/InsuranceRecommender";
+import { AuthProvider } from "@/hooks/use-auth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/insurance-categories" element={<InsuranceCategories />} />
-          <Route path="/insurance/:categoryId" element={<InsuranceDetail />} />
-          <Route path="/insurance-recommender" element={<InsuranceRecommender />} />
-          <Route path="/auth/signin" element={<SignIn />} />
-          <Route path="/auth/signup" element={<SignUp />} />
-          <Route path="/tools/policy-analysis" element={<PolicyAnalysisPage />} />
-          <Route path="/tools/premium-calculator" element={<PremiumCalculatorPage />} />
-          <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
-          <Route path="/chat-assistant" element={<ChatAssistantPage />} />
-          <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
-          <Route path="/verify-otp" element={<VerifyOTP />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/insurance-categories" element={<InsuranceCategories />} />
+            <Route path="/insurance/:categoryId" element={<InsuranceDetail />} />
+            <Route path="/insurance-recommender" element={<InsuranceRecommender />} />
+            <Route path="/auth/signin" element={<SignIn />} />
+            <Route path="/auth/signup" element={<SignUp />} />
+            <Route path="/tools/policy-analysis" element={<PolicyAnalysisPage />} />
+            <Route path="/tools/premium-calculator" element={<PremiumCalculatorPage />} />
+            <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
+            <Route path="/chat-assistant" element={<ChatAssistantPage />} />
+            <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
