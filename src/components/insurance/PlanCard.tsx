@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check, Heart, ThumbsUp } from 'lucide-react';
+import { Check, Heart, ThumbsUp, Star, Shield, TrendingUp, Info } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { RecommendedPlan } from '@/types/insurance';
 
@@ -22,7 +22,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, index, currency }) => {
           <div>
             {index === 0 && (
               <div className="inline-block px-3 py-1 rounded-full bg-insura-neon text-black text-xs font-medium mb-2 flex items-center">
-                <Heart className="h-3 w-3 mr-1" />
+                <Star className="h-3 w-3 mr-1" />
                 Best Match
               </div>
             )}
