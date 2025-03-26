@@ -1,9 +1,13 @@
 
-import React from 'react';
-import { Check, FileText, AlertCircle, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface AnalysisResultsProps {
   result: PolicyAnalysisResult;
@@ -12,6 +16,19 @@ interface AnalysisResultsProps {
 
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) => {
   const { toast } = useToast();
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    coverage: true,
+    exclusions: false,
+    deductibles: false,
+    recommendations: true
+  });
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const handleDownload = () => {
     toast({
@@ -21,80 +38,225 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   };
 
   return (
-    <div className="cyber-card rounded-xl p-8 max-w-4xl mx-auto animate-fade-in">
-      <div className="mb-8 p-6 bg-green-900/20 border border-green-500/30 rounded-lg flex items-start">
-        <CheckCircle className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-1" />
-        <div>
-          <h4 className="font-medium text-white mb-2">Analysis Complete</h4>
-          <p className="text-gray-300">
-            We've analyzed your policy and simplified the key terms and conditions. See the breakdown below.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
+      <Alert className="bg-green-900/20 border border-green-500/30 text-white">
+        <CheckCircle className="h-5 w-5 text-green-500" />
+        <AlertTitle className="text-white">Analysis Complete</AlertTitle>
+        <AlertDescription className="text-gray-300">
+          We've analyzed your policy and simplified the key terms and conditions.
+        </AlertDescription>
+      </Alert>
       
-      <div className="bg-black/60 rounded-lg border border-gray-800 p-6 mb-6 shadow-md">
-        <h3 className="text-xl font-bold mb-4 text-white">Policy Summary</h3>
-        <div className="space-y-6">
-          <div>
-            <h4 className="font-medium text-insura-neon mb-2">Coverage Highlights</h4>
-            <ul className="list-disc pl-5 space-y-2 text-gray-300">
-              <li>Home structure covered up to ${result.summary.coverageAmount.toLocaleString()}</li>
-              <li>Personal property covered up to ${result.summary.personalProperty.toLocaleString()}</li>
-              <li>Liability protection up to ${result.summary.liability.toLocaleString()}</li>
-              {result.summary.waterDamageCovered && <li>Water damage from plumbing issues is covered</li>}
-              {result.summary.theftCovered && <li>Theft and vandalism are covered</li>}
-            </ul>
+      {/* Policy Details Card */}
+      <Card className="bg-black/50 border border-gray-800 shadow-lg overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-insura-neon/30 to-insura-purple/30 border-b border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-white">{result.policyName || "Policy Summary"}</CardTitle>
+              <CardDescription className="text-gray-300">{result.providerName || "Insurance Policy"}</CardDescription>
+            </div>
+            {result.policyNumber && (
+              <Badge className="bg-insura-neon/20 text-insura-neon border border-insura-neon/30">
+                Policy #{result.policyNumber}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        
+        <CardContent className="p-6 space-y-6">
+          {/* Coverage Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('coverage')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <CheckCircle className="w-5 h-5 mr-2" /> Coverage Highlights
+              </h3>
+              {expandedSections.coverage ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.coverage && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <Table>
+                    <TableHeader className="bg-black/30">
+                      <TableRow className="border-gray-800">
+                        <TableHead className="text-insura-neon">Coverage Type</TableHead>
+                        <TableHead className="text-insura-neon text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-300">Home Structure</TableCell>
+                        <TableCell className="text-right text-white font-medium">
+                          ${result.summary.coverageAmount.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-300">Personal Property</TableCell>
+                        <TableCell className="text-right text-white font-medium">
+                          ${result.summary.personalProperty.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-300">Liability Protection</TableCell>
+                        <TableCell className="text-right text-white font-medium">
+                          ${result.summary.liability.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                  
+                  <div className="mt-4 space-y-2">
+                    {result.summary.waterDamageCovered && (
+                      <div className="flex items-center text-gray-300">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        Water damage from plumbing issues is covered
+                      </div>
+                    )}
+                    {result.summary.theftCovered && (
+                      <div className="flex items-center text-gray-300">
+                        <Check className="w-4 h-4 text-green-500 mr-2" />
+                        Theft and vandalism are covered
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
           
-          <div>
-            <h4 className="font-medium text-insura-neon mb-2">Key Exclusions</h4>
-            <ul className="list-disc pl-5 space-y-2 text-gray-300">
-              {result.exclusions.map((item: string, index: number) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+          {/* Exclusions Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('exclusions')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <AlertCircle className="w-5 h-5 mr-2" /> Key Exclusions
+              </h3>
+              {expandedSections.exclusions ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.exclusions && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <ul className="space-y-2">
+                    {result.exclusions.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
+                        <span className="text-gray-300">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
           
-          <div>
-            <h4 className="font-medium text-insura-neon mb-2">Deductibles</h4>
-            <p className="text-gray-300">
-              Standard deductible: {typeof result.deductibles.standard === 'number' ? 
-                `$${result.deductibles.standard.toLocaleString()}` : 
-                result.deductibles.standard}<br />
-              Wind/hail deductible: {result.deductibles.windHail}
-            </p>
+          {/* Deductibles Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('deductibles')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <Info className="w-5 h-5 mr-2" /> Deductibles
+              </h3>
+              {expandedSections.deductibles ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.deductibles && (
+              <Card className="bg-black/30 border border-gray-800">
+                <CardContent className="p-4">
+                  <Table>
+                    <TableHeader className="bg-black/30">
+                      <TableRow className="border-gray-800">
+                        <TableHead className="text-insura-neon">Type</TableHead>
+                        <TableHead className="text-insura-neon text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-300">Standard Deductible</TableCell>
+                        <TableCell className="text-right text-white font-medium">
+                          {typeof result.deductibles.standard === 'number' ? 
+                            `$${result.deductibles.standard.toLocaleString()}` : 
+                            result.deductibles.standard}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-300">Wind/Hail Deductible</TableCell>
+                        <TableCell className="text-right text-white font-medium">
+                          {result.deductibles.windHail}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </div>
+        </CardContent>
+      </Card>
+      
+      {/* Recommendations Card */}
+      <div className="space-y-4">
+        <div 
+          className="flex items-center justify-between cursor-pointer" 
+          onClick={() => toggleSection('recommendations')}
+        >
+          <h3 className="text-lg font-semibold text-white flex items-center">
+            <FileText className="w-5 h-5 mr-2 text-insura-neon" /> AI Recommendations
+          </h3>
+          {expandedSections.recommendations ? 
+            <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+            <ArrowDown className="w-5 h-5 text-gray-400" />
+          }
         </div>
+        
+        {expandedSections.recommendations && (
+          <Card className="bg-gradient-to-b from-insura-neon/5 to-insura-purple/5 border border-insura-neon/20 shadow-lg">
+            <CardContent className="p-6">
+              <ul className="space-y-4">
+                {result.recommendations.map((rec: any, index: number) => (
+                  <li key={index} className="flex items-start">
+                    <div className={`p-2 rounded-full mr-3 flex-shrink-0 ${
+                      rec.type === 'warning' ? 'bg-yellow-900/30 text-yellow-500' :
+                      rec.type === 'success' ? 'bg-green-900/30 text-green-500' :
+                      'bg-blue-900/30 text-blue-400'
+                    }`}>
+                      {rec.type === 'warning' ? (
+                        <AlertCircle className="h-5 w-5" />
+                      ) : rec.type === 'success' ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        <FileText className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-white mb-1">{rec.title}</p>
+                      <p className="text-gray-300">{rec.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
-      <div className="bg-insura-neon/5 rounded-lg p-6 border border-insura-neon/20 shadow-md">
-        <h3 className="text-xl font-bold mb-4 text-white">AI Recommendations</h3>
-        <ul className="space-y-4">
-          {result.recommendations.map((rec: any, index: number) => (
-            <li key={index} className="flex items-start">
-              <div className={`p-1 rounded mr-3 flex-shrink-0 mt-1 ${
-                rec.type === 'warning' ? 'bg-yellow-900/30 text-yellow-500' :
-                rec.type === 'success' ? 'bg-green-900/30 text-green-500' :
-                'bg-blue-900/30 text-blue-400'
-              }`}>
-                {rec.type === 'warning' ? (
-                  <AlertCircle className="h-5 w-5" />
-                ) : rec.type === 'success' ? (
-                  <Check className="h-5 w-5" />
-                ) : (
-                  <FileText className="h-5 w-5" />
-                )}
-              </div>
-              <div>
-                <p className="font-medium text-white">{rec.title}</p>
-                <p className="text-gray-300">{rec.description}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-      
-      <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
         <ButtonCustom
           variant="primary"
           size="lg"
