@@ -1,3 +1,4 @@
+
 import { RecommendedPlan } from '@/types/insurance';
 import { API_URL, RECOMMENDATION_MODEL_API } from './apiConfig';
 
@@ -6,7 +7,13 @@ export interface InsuranceFormData {
   email: string;
   age: string;
   zipCode: string;
-  features: string[];
+  features: {
+    emergency_services: boolean;
+    preventive_care_and_screenings: boolean;
+    hospital_stays_and_treatments: boolean;
+    prescription_medication: boolean;
+    pre_existing_health_conditions: boolean;
+  };
   budget: string;
   smokingStatus?: string;
 }

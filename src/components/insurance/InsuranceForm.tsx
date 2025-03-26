@@ -21,7 +21,13 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
     email: '',
     age: '',
     zipCode: '',
-    features: [],
+    features: {
+      emergency_services: false,
+      preventive_care_and_screenings: false,
+      hospital_stays_and_treatments: false,
+      prescription_medication: false,
+      pre_existing_health_conditions: false
+    },
     budget: '',
     smokingStatus: 'Non-Smoker'
   });
@@ -32,15 +38,15 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
+    const { name, checked } = e.target;
     
-    setFormData(prev => {
-      if (checked) {
-        return { ...prev, features: [...prev.features, value] };
-      } else {
-        return { ...prev, features: prev.features.filter(feature => feature !== value) };
+    setFormData(prev => ({
+      ...prev,
+      features: {
+        ...prev.features,
+        [name]: checked
       }
-    });
+    }));
   };
 
   const onSubmit = (e: React.FormEvent) => {
@@ -133,21 +139,71 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
         <div>
           <label className="block text-white text-sm font-medium mb-2">Which features are most important to you?</label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {categoryInfo.coverageOptions.slice(0, 6).map((option, index) => (
-              <div key={index} className="flex items-center">
-                <input
-                  type="checkbox"
-                  id={`option-${index}`}
-                  name="features"
-                  value={option}
-                  onChange={handleCheckboxChange}
-                  className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
-                />
-                <label htmlFor={`option-${index}`} className="ml-2 text-sm text-gray-300">
-                  {option}
-                </label>
-              </div>
-            ))}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="emergency_services"
+                name="emergency_services"
+                checked={formData.features.emergency_services}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+              />
+              <label htmlFor="emergency_services" className="ml-2 text-sm text-gray-300">
+                Emergency Services
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="preventive_care_and_screenings"
+                name="preventive_care_and_screenings"
+                checked={formData.features.preventive_care_and_screenings}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+              />
+              <label htmlFor="preventive_care_and_screenings" className="ml-2 text-sm text-gray-300">
+                Preventive Care and Screenings
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="hospital_stays_and_treatments"
+                name="hospital_stays_and_treatments"
+                checked={formData.features.hospital_stays_and_treatments}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+              />
+              <label htmlFor="hospital_stays_and_treatments" className="ml-2 text-sm text-gray-300">
+                Hospital Stays and Treatments
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="prescription_medication"
+                name="prescription_medication"
+                checked={formData.features.prescription_medication}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+              />
+              <label htmlFor="prescription_medication" className="ml-2 text-sm text-gray-300">
+                Prescription Medication
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="pre_existing_health_conditions"
+                name="pre_existing_health_conditions"
+                checked={formData.features.pre_existing_health_conditions}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-insura-neon bg-gray-900 border-gray-700 rounded focus:ring-insura-neon focus:ring-opacity-25"
+              />
+              <label htmlFor="pre_existing_health_conditions" className="ml-2 text-sm text-gray-300">
+                Pre-existing Health Conditions
+              </label>
+            </div>
           </div>
         </div>
 
