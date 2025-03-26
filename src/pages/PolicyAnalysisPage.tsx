@@ -8,6 +8,7 @@ import DocumentUploader from '@/components/policy-analysis/DocumentUploader';
 import AnalysisResults from '@/components/policy-analysis/AnalysisResults';
 import FeatureDescription from '@/components/policy-analysis/FeatureDescription';
 import PageHeader from '@/components/policy-analysis/PageHeader';
+import { BrainCircuit } from 'lucide-react';
 
 const PolicyAnalysisPage = () => {
   const [file, setFile] = useState<File | null>(null);
