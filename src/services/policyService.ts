@@ -1,3 +1,4 @@
+
 import { API_URL, DOC_ANALYSIS_API } from './apiConfig';
 
 export interface PolicyAnalysisResult {
@@ -19,7 +20,6 @@ export interface PolicyAnalysisResult {
     windHail: string;
   };
   recommendations: Array<{
-    // Update the type to allow "warning", "success", and "info"
     type: 'warning' | 'success' | 'info';
     title: string;
     description: string;
