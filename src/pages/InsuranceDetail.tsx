@@ -93,15 +93,27 @@ const InsuranceDetail = () => {
               benefits.push(defaultBenefits[i]);
             }
           }
+
+          // Monthly premium calculation - handle both API response formats
+          let monthlyPremium = 0;
+          if (plan.Monthly_Premium) {
+            monthlyPremium = plan.Monthly_Premium;
+          } else if (plan.Budget_in_INR) {
+            // If we have Budget_in_INR, use that as the premium
+            monthlyPremium = plan.Budget_in_INR;
+          }
+          
+          // Coverage amount calculation - default to 100x the monthly premium if not provided
+          const coverageAmount = plan.Coverage_Amount || monthlyPremium * 100;
           
           return {
             id: `plan-${index + 1}`,
-            name: plan.Plan_Name || `Health Plan ${index + 1}`,
-            provider: plan.Insurance_Provider || 'Insurance Provider',
-            monthlyPremium: `$${(plan.Monthly_Premium / 83.5).toFixed(2)}`,
-            monthlyPremiumINR: `₹${plan.Monthly_Premium?.toFixed(2) || '0.00'}`,
-            coverageAmount: `$${(plan.Coverage_Amount / 83.5).toLocaleString()}`,
-            coverageAmountINR: `₹${plan.Coverage_Amount?.toLocaleString() || '0'}`,
+            name: plan.Plan_Name || plan.Policy_Name || `Health Plan ${index + 1}`,
+            provider: plan.Insurance_Provider || plan.Insurance_Company || 'Insurance Provider',
+            monthlyPremium: `$${(monthlyPremium / 83.5).toFixed(2)}`,
+            monthlyPremiumINR: `₹${monthlyPremium?.toFixed(2) || '0.00'}`,
+            coverageAmount: `$${(coverageAmount / 83.5).toLocaleString()}`,
+            coverageAmountINR: `₹${coverageAmount?.toLocaleString() || '0'}`,
             benefits: benefits,
             suitabilityScore: plan.Match_Score || (95 - index * 7),
             description: plan.Plan_Description || 'A comprehensive health insurance plan'

@@ -42,15 +42,23 @@ export interface RecommendationModelParams {
 
 // Interface to represent the model API response
 export interface ModelRecommendationResponse {
-  Plan_Name: string;
-  Insurance_Provider: string;
-  Monthly_Premium: number;
-  Coverage_Amount: number;
+  Plan_Name?: string;
+  Policy_Name?: string;
+  Insurance_Provider?: string;
+  Insurance_Company?: string;
+  Monthly_Premium?: number;
+  Budget_in_INR?: number;
+  Coverage_Amount?: number;
   Coverage_Details?: string;
   Additional_Benefits?: string;
   Network_Type?: string;
-  Match_Score: number;
+  Match_Score?: number;
   Plan_Description?: string;
+}
+
+// Added a new interface to match the actual API response format
+interface ApiResponse {
+  recommendations?: ModelRecommendationResponse[];
 }
 
 export const fetchInsuranceRecommendations = async (
