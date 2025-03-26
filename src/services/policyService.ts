@@ -58,9 +58,9 @@ interface ApiResponse {
 const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult => {
   console.log('Transforming API response:', apiResponse);
   
-  // Extract sum_assured and convert to number
+  // Extract sum_assured and convert to number (already in INR)
   const sumAssured = apiResponse.coverage_details?.sum_assured 
-    ? parseFloat(apiResponse.coverage_details.sum_assured) * 100000 // Convert lakhs to rupees (example)
+    ? parseFloat(apiResponse.coverage_details.sum_assured) * 100000 // Convert lakhs to rupees
     : 500000; // Default value
   
   return {
@@ -83,7 +83,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
       {
         type: 'info',
         title: 'Coverage Summary',
-        description: `Your policy provides total coverage of ${sumAssured.toLocaleString()} for ${apiResponse.coverage_details?.type || 'insurance protection'}.`,
+        description: `Your policy provides total coverage of ₹${sumAssured.toLocaleString('en-IN')} for ${apiResponse.coverage_details?.type || 'insurance protection'}.`,
       },
       {
         type: 'warning',

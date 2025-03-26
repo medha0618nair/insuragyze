@@ -37,6 +37,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     });
   };
 
+  // Format currency to INR
+  const formatINR = (amount: number): string => {
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       <Alert className="bg-green-900/20 border border-green-500/30 text-white">
@@ -93,19 +98,19 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                       <TableRow className="border-gray-800">
                         <TableCell className="text-gray-300">Home Structure</TableCell>
                         <TableCell className="text-right text-white font-medium">
-                          ${result.summary.coverageAmount.toLocaleString()}
+                          {formatINR(result.summary.coverageAmount)}
                         </TableCell>
                       </TableRow>
                       <TableRow className="border-gray-800">
                         <TableCell className="text-gray-300">Personal Property</TableCell>
                         <TableCell className="text-right text-white font-medium">
-                          ${result.summary.personalProperty.toLocaleString()}
+                          {formatINR(result.summary.personalProperty)}
                         </TableCell>
                       </TableRow>
                       <TableRow className="border-gray-800">
                         <TableCell className="text-gray-300">Liability Protection</TableCell>
                         <TableCell className="text-right text-white font-medium">
-                          ${result.summary.liability.toLocaleString()}
+                          {formatINR(result.summary.liability)}
                         </TableCell>
                       </TableRow>
                     </TableBody>
@@ -191,7 +196,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                         <TableCell className="text-gray-300">Standard Deductible</TableCell>
                         <TableCell className="text-right text-white font-medium">
                           {typeof result.deductibles.standard === 'number' ? 
-                            `$${result.deductibles.standard.toLocaleString()}` : 
+                            formatINR(result.deductibles.standard) : 
                             result.deductibles.standard}
                         </TableCell>
                       </TableRow>
