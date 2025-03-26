@@ -3,7 +3,7 @@ import { RecommendedPlan } from '@/types/insurance';
 
 // Use environment variable or default to localhost for development
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/analyze'; // Updated endpoint
+const DOC_ANALYSIS_API = 'https://doc-analyser.onrender.com/api/analyze'; // Updated URL to include /api prefix
 
 export interface InsuranceFormData {
   fullName: string;
