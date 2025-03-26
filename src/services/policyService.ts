@@ -13,8 +13,6 @@ export interface PolicyAnalysisResult {
     theftCovered: boolean;
   };
   exclusions: string[];
-  benefits: string[];
-  loopholes: string[];
   deductibles: {
     standard: number | string;
     windHail: string;
@@ -65,33 +63,6 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     ? parseFloat(apiResponse.coverage_details.sum_assured) * 100000 // Convert lakhs to rupees
     : 500000; // Default value
   
-  // Process exclusions - split by bullet points if in a single string
-  const processedExclusions = apiResponse.exclusions?.length
-    ? apiResponse.exclusions.flatMap(exclusion => 
-        exclusion.includes('◦') 
-          ? exclusion.split('◦').filter(item => item.trim().length > 0).map(item => item.trim())
-          : [exclusion]
-      )
-    : ['Standard exclusions apply'];
-  
-  // Extract benefits from the API response or provide default ones
-  const benefits = apiResponse.coverage_details?.additional_benefits?.length
-    ? apiResponse.coverage_details.additional_benefits
-    : [
-        'Emergency medical expenses covered',
-        'Cashless hospitalization at network hospitals',
-        'Pre and post hospitalization expenses covered',
-        'No claim bonus on policy renewal'
-      ];
-  
-  // Add potential loopholes identified from the policy
-  const loopholes = [
-    'Waiting periods may apply for certain conditions',
-    'Some treatments may require pre-authorization',
-    'Sub-limits on room rent can affect overall claim amount',
-    'Certain specialized treatments may have coverage caps'
-  ];
-  
   return {
     policyName: apiResponse.policy_details?.policy_name || 'Insurance Policy',
     policyNumber: apiResponse.policy_details?.policy_number,
@@ -103,9 +74,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
       waterDamageCovered: true, // Default values
       theftCovered: true, // Default values
     },
-    exclusions: processedExclusions,
-    benefits: benefits,
-    loopholes: loopholes,
+    exclusions: apiResponse.exclusions || [],
     deductibles: {
       standard: 1000, // Default values
       windHail: 'Not applicable',

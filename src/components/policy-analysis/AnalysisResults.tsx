@@ -19,8 +19,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     coverage: true,
     exclusions: false,
-    benefits: false,
-    loopholes: false,
     deductibles: false,
     recommendations: true
   });
@@ -137,37 +135,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Benefits Section */}
-          <div className="space-y-4">
-            <div 
-              className="flex items-center justify-between cursor-pointer" 
-              onClick={() => toggleSection('benefits')}
-            >
-              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2" /> Key Benefits
-              </h3>
-              {expandedSections.benefits ? 
-                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
-                <ArrowDown className="w-5 h-5 text-gray-400" />
-              }
-            </div>
-            
-            {expandedSections.benefits && (
-              <Card className="bg-black/30 border border-gray-800">
-                <CardContent className="p-4">
-                  <ul className="space-y-2">
-                    {result.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
-                        <span className="text-gray-300">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          
           {/* Exclusions Section */}
           <div className="space-y-4">
             <div 
@@ -187,40 +154,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               <Card className="bg-black/30 border border-gray-800">
                 <CardContent className="p-4">
                   <ul className="space-y-2">
-                    {result.exclusions.map((item, index) => (
+                    {result.exclusions.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
-                        <span className="text-gray-300">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-          
-          {/* Loopholes Section */}
-          <div className="space-y-4">
-            <div 
-              className="flex items-center justify-between cursor-pointer" 
-              onClick={() => toggleSection('loopholes')}
-            >
-              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" /> Potential Loopholes
-              </h3>
-              {expandedSections.loopholes ? 
-                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
-                <ArrowDown className="w-5 h-5 text-gray-400" />
-              }
-            </div>
-            
-            {expandedSections.loopholes && (
-              <Card className="bg-black/30 border border-gray-800">
-                <CardContent className="p-4">
-                  <ul className="space-y-2">
-                    {result.loopholes.map((item, index) => (
-                      <li key={index} className="flex items-start">
-                        <Info className="w-4 h-4 text-blue-400 mr-2 mt-1 flex-shrink-0" />
                         <span className="text-gray-300">{item}</span>
                       </li>
                     ))}
@@ -298,7 +234,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
           <Card className="bg-gradient-to-b from-insura-neon/5 to-insura-purple/5 border border-insura-neon/20 shadow-lg">
             <CardContent className="p-6">
               <ul className="space-y-4">
-                {result.recommendations.map((rec, index) => (
+                {result.recommendations.map((rec: any, index: number) => (
                   <li key={index} className="flex items-start">
                     <div className={`p-2 rounded-full mr-3 flex-shrink-0 ${
                       rec.type === 'warning' ? 'bg-yellow-900/30 text-yellow-500' :
