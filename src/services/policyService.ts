@@ -1,4 +1,3 @@
-
 import { API_URL, DOC_ANALYSIS_API } from './apiConfig';
 
 export interface PolicyAnalysisResult {
