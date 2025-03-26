@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { analyzePolicyDocument, PolicyAnalysisResult } from '@/services/api';
+import { analyzePolicyDocument, PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUploader from '@/components/policy-analysis/DocumentUploader';
 import AnalysisResults from '@/components/policy-analysis/AnalysisResults';
@@ -36,6 +36,7 @@ const PolicyAnalysisPage = () => {
       const formData = new FormData();
       formData.append('document', file);
       
+      console.log('Analyzing document:', file.name, file.type, file.size);
       const result = await analyzePolicyDocument(formData);
       setAnalysisResult(result);
       
@@ -96,4 +97,3 @@ const PolicyAnalysisPage = () => {
 };
 
 export default PolicyAnalysisPage;
-
