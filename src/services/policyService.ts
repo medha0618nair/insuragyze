@@ -158,9 +158,9 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     ];
   
   // Create appropriate recommendations based on the document
-  const recommendations = [
+  const recommendations: PolicyAnalysisResult['recommendations'] = [
     {
-      type: 'info' as const,
+      type: 'info',
       title: 'Coverage Summary',
       description: `Your policy provides total coverage of ₹${sumAssured.toLocaleString('en-IN')} for ${apiResponse.content?.['2️⃣ Coverage Overview']?.['Type of Insurance'] || apiResponse.coverage_details?.type || 'insurance protection'}.`,
     }
@@ -169,7 +169,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   // Add warnings based on exclusions and loopholes
   if (exclusions.length > 0) {
     recommendations.push({
-      type: 'warning' as const,
+      type: 'warning',
       title: 'Review Exclusions',
       description: 'Your policy has some exclusions. Review them carefully to understand what is not covered.',
     });
@@ -177,7 +177,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   
   if (loopholes.length > 0) {
     recommendations.push({
-      type: 'warning' as const,
+      type: 'warning',
       title: 'Be Aware of Loopholes',
       description: 'We identified potential loopholes in your policy. Review these carefully to understand potential coverage gaps.',
     });
@@ -185,7 +185,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   
   // Add recommendation about coverage level
   recommendations.push({
-    type: 'success' as const,
+    type: 'success',
     title: 'Good Coverage Level',
     description: 'Your coverage level appears adequate based on standard recommendations.',
   });
