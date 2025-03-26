@@ -16,8 +16,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-insura-cyberdark to-black overflow-x-hidden">
-      <div className="absolute inset-0 cyber-dots-bg opacity-30 pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
       <Navbar />
       <Hero />
       <Features />

@@ -39,10 +39,6 @@ export default {
 					purple: '#8B5CF6',
 					darkpurple: '#6D28D9',
 					cyberdark: '#121212',
-					cyberblack: '#0A0A0A',
-					cybergreen: '#00FF66',
-					cybermagenta: '#FF00FF',
-					cyberglow: '#33FFFF',
 				},
 				secondary: {
 					DEFAULT: 'hsl(var(--secondary))',
@@ -124,14 +120,6 @@ export default {
 					'0%': { backgroundPosition: '0% 50%' },
 					'50%': { backgroundPosition: '100% 50%' },
 					'100%': { backgroundPosition: '0% 50%' }
-				},
-				'neon-pulse': {
-					'0%, 100%': { textShadow: '0 0 8px rgba(0, 240, 255, 0.7), 0 0 15px rgba(0, 240, 255, 0.5)' },
-					'50%': { textShadow: '0 0 15px rgba(0, 240, 255, 0.9), 0 0 25px rgba(0, 240, 255, 0.7)' }
-				},
-				'cyber-scan': {
-					'0%': { backgroundPosition: '0% 0%' },
-					'100%': { backgroundPosition: '100% 100%' }
 				}
 			},
 			animation: {
@@ -143,20 +131,13 @@ export default {
 				'pulse-slow': 'pulse-slow 3s infinite ease-in-out',
 				'float': 'float 6s infinite ease-in-out',
 				'glitch': 'glitch 0.5s ease-in-out infinite alternate',
-				'gradient-shift': 'gradient-shift 5s ease infinite',
-				'neon-pulse': 'neon-pulse 2s infinite',
-				'cyber-scan': 'cyber-scan 2s infinite linear'
+				'gradient-shift': 'gradient-shift 5s ease infinite'
 			},
 			backgroundImage: {
         'cyber-gradient': 'linear-gradient(to right, #0A84FF, #8B5CF6)',
         'neon-gradient': 'linear-gradient(to right, #00F0FF, #0060C8)',
         'purple-gradient': 'linear-gradient(to right, #8B5CF6, #6D28D9)',
-        'cyber-grid': 'radial-gradient(#33FFFF 1px, transparent 1px)',
-        'cyber-glow': 'linear-gradient(to right, rgba(0, 240, 255, 0), rgba(0, 240, 255, 0.2), rgba(0, 240, 255, 0))'
-      },
-      backgroundSize: {
-        'size-200': '200% 200%',
-      },
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

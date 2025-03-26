@@ -22,13 +22,13 @@ const ButtonCustom = React.forwardRef<HTMLButtonElement, ButtonProps>(
     iconPosition = "left",
     ...props 
   }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-insura-neon focus:ring-opacity-50 shadow-sm hover:shadow-md transform hover:-translate-y-0.5";
+    const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-insura-blue focus:ring-opacity-50 shadow-sm hover:shadow-md transform hover:-translate-y-0.5";
     
     const variantStyles = {
-      primary: "bg-insura-neon text-black hover:bg-insura-neon/90 shadow-insura-neon/20",
-      secondary: "bg-insura-purple text-white border border-insura-purple hover:bg-insura-darkpurple",
-      outline: "bg-transparent border border-insura-neon text-insura-neon hover:bg-insura-neon/10",
-      ghost: "bg-transparent text-insura-neon hover:bg-insura-neon/10",
+      primary: "bg-insura-blue text-white hover:bg-insura-darkblue",
+      secondary: "bg-white text-insura-blue border border-insura-blue hover:bg-insura-lightblue",
+      outline: "bg-transparent border border-insura-blue text-insura-blue hover:bg-insura-lightblue",
+      ghost: "bg-transparent text-insura-blue hover:bg-insura-lightblue",
     };
     
     const sizeStyles = {
