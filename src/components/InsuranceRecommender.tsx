@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ButtonCustom } from './ui/button-custom';
 import { 
@@ -13,7 +12,11 @@ import {
   Star
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchRecommendationModel, RecommendationModelParams } from '@/services/insuranceService';
+import { 
+  fetchRecommendationModel, 
+  RecommendationModelParams, 
+  ModelRecommendationResponse 
+} from '@/services/insuranceService';
 
 interface FormData {
   fullName: string;
@@ -69,12 +72,83 @@ const InsuranceRecommender = () => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
+  const convertApiResponseToRecommendedPlans = (apiResponse: ModelRecommendationResponse[]): RecommendedPlan[] => {
+    if (!apiResponse || !Array.isArray(apiResponse) || apiResponse.length === 0) {
+      toast.warning("Using fallback data due to empty API response");
+      return getDefaultRecommendedPlans();
+    }
+    
+    return apiResponse.map((plan, index) => {
+      const benefits = [];
+      if (plan.Coverage_Details) benefits.push(plan.Coverage_Details);
+      if (plan.Additional_Benefits) benefits.push(plan.Additional_Benefits);
+      if (plan.Network_Type) benefits.push(plan.Network_Type);
+      
+      if (benefits.length < 3) {
+        const defaultBenefits = [
+          'Comprehensive coverage',
+          'Standard network access',
+          'Basic preventive care'
+        ];
+        
+        for (let i = benefits.length; i < 3; i++) {
+          benefits.push(defaultBenefits[i]);
+        }
+      }
+      
+      return {
+        id: `plan-${index + 1}`,
+        name: plan.Plan_Name || `Health Plan ${index + 1}`,
+        provider: plan.Insurance_Provider || 'Insurance Provider',
+        monthlyPremium: `$${plan.Monthly_Premium?.toFixed(2) || '0.00'}`,
+        coverageAmount: `$${plan.Coverage_Amount?.toLocaleString() || '0'}`,
+        benefits: benefits,
+        suitabilityScore: plan.Match_Score || (95 - index * 7),
+        description: plan.Plan_Description || 'A comprehensive health insurance plan.'
+      };
+    });
+  };
+
+  const getDefaultRecommendedPlans = (): RecommendedPlan[] => {
+    return [
+      {
+        id: '1',
+        name: 'Premium Health Plus',
+        provider: 'BlueCross Insurance',
+        monthlyPremium: '$285',
+        coverageAmount: '$1,000,000',
+        benefits: ['Comprehensive hospital coverage', 'Mental health support', 'Preventive care', 'Prescription drugs', 'Specialist visits'],
+        suitabilityScore: 95,
+        description: 'Ideal for professionals with high income seeking comprehensive coverage.'
+      },
+      {
+        id: '2',
+        name: 'Family Shield Plan',
+        provider: 'Harmony Health',
+        monthlyPremium: '$340',
+        coverageAmount: '$800,000',
+        benefits: ['Family doctor visits', 'Maternity care', 'Child wellness', 'Emergency services', 'Dental basics'],
+        suitabilityScore: 88,
+        description: 'Perfect for families with children, including special coverage for maternity and pediatric care.'
+      },
+      {
+        id: '3',
+        name: 'Essential Coverage',
+        provider: 'UniHealth',
+        monthlyPremium: '$195',
+        coverageAmount: '$500,000',
+        benefits: ['Hospital care', 'Emergency services', 'Basic diagnostic tests', 'Limited specialist visits'],
+        suitabilityScore: 75,
+        description: 'Budget-friendly option that covers essential health needs without premium features.'
+      },
+    ];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Prepare params for the recommendation model API
       const modelParams: RecommendationModelParams = {
         Full_Name: formData.fullName,
         Age: parseInt(formData.age, 10),
@@ -91,107 +165,19 @@ const InsuranceRecommender = () => {
       
       console.log('Submitting model parameters:', modelParams);
       
-      // Call the API
       const response = await fetchRecommendationModel(modelParams);
       console.log('API response:', response);
       setApiResponse(response);
       
-      // Transform the API response into our application's format
-      let transformedPlans: RecommendedPlan[] = [];
-      
-      if (response && Array.isArray(response)) {
-        transformedPlans = response.map((plan: any, index: number) => ({
-          id: `plan-${index + 1}`,
-          name: plan.Plan_Name || `Health Plan ${index + 1}`,
-          provider: plan.Insurance_Provider || 'Insurance Provider',
-          monthlyPremium: `$${plan.Monthly_Premium || '0'}`,
-          coverageAmount: `$${plan.Coverage_Amount || '0'}`,
-          benefits: [
-            plan.Coverage_Details || 'Comprehensive coverage',
-            plan.Additional_Benefits || 'Standard benefits',
-            plan.Network_Type || 'Standard network'
-          ].filter(Boolean),
-          suitabilityScore: plan.Match_Score || (95 - index * 7),
-          description: plan.Plan_Description || 'A comprehensive health insurance plan.'
-        }));
-      } else {
-        // Fallback to mock data if API doesn't return expected format
-        toast.warning("Using sample data due to API format issues");
-        transformedPlans = [
-          {
-            id: '1',
-            name: 'Premium Health Plus',
-            provider: 'BlueCross Insurance',
-            monthlyPremium: '$285',
-            coverageAmount: '$1,000,000',
-            benefits: ['Comprehensive hospital coverage', 'Mental health support', 'Preventive care', 'Prescription drugs', 'Specialist visits'],
-            suitabilityScore: 95,
-            description: 'Ideal for professionals with high income seeking comprehensive coverage.'
-          },
-          {
-            id: '2',
-            name: 'Family Shield Plan',
-            provider: 'Harmony Health',
-            monthlyPremium: '$340',
-            coverageAmount: '$800,000',
-            benefits: ['Family doctor visits', 'Maternity care', 'Child wellness', 'Emergency services', 'Dental basics'],
-            suitabilityScore: 88,
-            description: 'Perfect for families with children, including special coverage for maternity and pediatric care.'
-          },
-          {
-            id: '3',
-            name: 'Essential Coverage',
-            provider: 'UniHealth',
-            monthlyPremium: '$195',
-            coverageAmount: '$500,000',
-            benefits: ['Hospital care', 'Emergency services', 'Basic diagnostic tests', 'Limited specialist visits'],
-            suitabilityScore: 75,
-            description: 'Budget-friendly option that covers essential health needs without premium features.'
-          },
-        ];
-      }
-
+      const transformedPlans = convertApiResponseToRecommendedPlans(response);
       setRecommendedPlans(transformedPlans);
       setStep('results');
       
     } catch (error) {
       console.error('Error fetching recommendations:', error);
-      toast.error('Failed to fetch recommendations. Please try again.');
+      toast.error('Failed to fetch recommendations. Using default recommendations.');
       
-      // Use mock data as fallback
-      const mockRecommendations: RecommendedPlan[] = [
-        {
-          id: '1',
-          name: 'Premium Health Plus',
-          provider: 'BlueCross Insurance',
-          monthlyPremium: '$285',
-          coverageAmount: '$1,000,000',
-          benefits: ['Comprehensive hospital coverage', 'Mental health support', 'Preventive care', 'Prescription drugs', 'Specialist visits'],
-          suitabilityScore: 95,
-          description: 'Ideal for professionals with high income seeking comprehensive coverage.'
-        },
-        {
-          id: '2',
-          name: 'Family Shield Plan',
-          provider: 'Harmony Health',
-          monthlyPremium: '$340',
-          coverageAmount: '$800,000',
-          benefits: ['Family doctor visits', 'Maternity care', 'Child wellness', 'Emergency services', 'Dental basics'],
-          suitabilityScore: 88,
-          description: 'Perfect for families with children, including special coverage for maternity and pediatric care.'
-        },
-        {
-          id: '3',
-          name: 'Essential Coverage',
-          provider: 'UniHealth',
-          monthlyPremium: '$195',
-          coverageAmount: '$500,000',
-          benefits: ['Hospital care', 'Emergency services', 'Basic diagnostic tests', 'Limited specialist visits'],
-          suitabilityScore: 75,
-          description: 'Budget-friendly option that covers essential health needs without premium features.'
-        },
-      ];
-      
+      const mockRecommendations = getDefaultRecommendedPlans();
       setRecommendedPlans(mockRecommendations);
       setStep('results');
     } finally {

@@ -32,6 +32,19 @@ export interface RecommendationModelParams {
   Pre_existing_Health_Conditions: boolean;
 }
 
+// Interface to represent the model API response
+export interface ModelRecommendationResponse {
+  Plan_Name: string;
+  Insurance_Provider: string;
+  Monthly_Premium: number;
+  Coverage_Amount: number;
+  Coverage_Details?: string;
+  Additional_Benefits?: string;
+  Network_Type?: string;
+  Match_Score: number;
+  Plan_Description?: string;
+}
+
 export const fetchInsuranceRecommendations = async (
   categoryId: string,
   formData: InsuranceFormData
@@ -95,7 +108,7 @@ export const fetchAIRecommendations = async (data: AIRecommendationData) => {
   }
 };
 
-export const fetchRecommendationModel = async (params: RecommendationModelParams): Promise<any> => {
+export const fetchRecommendationModel = async (params: RecommendationModelParams): Promise<ModelRecommendationResponse[]> => {
   try {
     console.log('Fetching recommendations from model API with params:', params);
     
@@ -133,7 +146,17 @@ export const fetchRecommendationModel = async (params: RecommendationModelParams
     const result = await response.json();
     console.log('Recommendation model API response:', result);
     
-    return result;
+    // Ensure the result is processed correctly
+    if (Array.isArray(result)) {
+      return result as ModelRecommendationResponse[];
+    } else if (result && typeof result === 'object') {
+      // In case the API returns a wrapper object
+      return Array.isArray(result.recommendations) ? result.recommendations : [result];
+    }
+    
+    // Return empty array if the response format is unexpected
+    console.warn('Unexpected response format:', result);
+    return [];
   } catch (error) {
     console.error('Recommendation Model API Error:', error);
     throw error;
