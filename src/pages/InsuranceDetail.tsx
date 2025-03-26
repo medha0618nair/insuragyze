@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -63,12 +64,12 @@ const InsuranceDetail = () => {
           Budget_in_INR: parseInt(formData.budget, 10),
           Zip_Code: formData.zipCode,
           Email: formData.email,
-          Emergency_Services: formData.features.includes('Emergency Services'),
-          Preventive_Care_and_Screenings: formData.features.includes('Preventive Care'),
-          Hospital_Stays_and_Treatments: formData.features.includes('Hospital Coverage'),
-          Prescription_Medication: formData.features.includes('Prescription Drugs'),
+          Emergency_Services: formData.features.emergency_services,
+          Preventive_Care_and_Screenings: formData.features.preventive_care_and_screenings,
+          Hospital_Stays_and_Treatments: formData.features.hospital_stays_and_treatments,
+          Prescription_Medication: formData.features.prescription_medication,
           Smoking_Status: formData.smokingStatus || 'Non-Smoker',
-          Pre_existing_Health_Conditions: formData.features.includes('Pre-existing Conditions')
+          Pre_existing_Health_Conditions: formData.features.pre_existing_health_conditions
         };
         
         console.log('Submitting to recommendation model:', modelParams);
