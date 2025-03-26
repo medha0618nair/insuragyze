@@ -27,19 +27,24 @@ export interface PolicyAnalysisResult {
 export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
     console.log('Uploading document to:', DOC_ANALYSIS_API);
-    console.log('FormData keys:', [...formData.keys()]);
     
-    // Ensure the file is attached with the correct field name 'document'
-    // If 'document' doesn't exist but a file exists under another key, adjust it
-    if (!formData.has('document') && formData.has('file')) {
-      const file = formData.get('file');
-      formData.delete('file');
-      formData.append('document', file as Blob);
+    // Create a new FormData and ensure the file is attached with the field name 'file'
+    // which is what the API expects based on the error message
+    const apiFormData = new FormData();
+    
+    if (formData.has('document')) {
+      const documentFile = formData.get('document');
+      // Add the file with the field name 'file' instead of 'document'
+      apiFormData.append('file', documentFile as Blob);
+      console.log('FormData keys after conversion:', [...apiFormData.keys()]);
+    } else {
+      console.error('No document file found in the FormData');
+      throw new Error('No document file provided');
     }
     
     const response = await fetch(DOC_ANALYSIS_API, {
       method: 'POST',
-      body: formData,
+      body: apiFormData,
       // Don't set Content-Type header, the browser will set it with the boundary
     });
 
