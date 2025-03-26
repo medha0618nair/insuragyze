@@ -55,79 +55,164 @@ interface ApiResponse {
     contact?: string;
     timeframe?: string;
   };
-  potential_loopholes?: string[]; // Add this field to the interface
+  potential_loopholes?: string[];
   content?: {
+    '1️⃣ Introduction'?: {
+      'Policy Name'?: string;
+      'Policy Number'?: string;
+      'Issued by'?: string;
+      'Insurer Contact'?: string;
+      'Date of Issue'?: string;
+      'Expiry Date'?: string;
+    };
+    '2️⃣ Coverage Overview'?: {
+      'Type of Insurance'?: string;
+      'Sum Assured'?: string;
+      'Risks Covered'?: string[];
+      'Additional Benefits'?: string[];
+    };
+    '3️⃣ Premium & Payment Details'?: {
+      'Premium Amount'?: string;
+      'Payment Frequency'?: string;
+      'Due Date'?: string;
+      'Grace Period'?: string;
+    };
+    '4️⃣ Benefits & Advantages'?: {
+      'Key Benefits'?: string[];
+    };
+    '5️⃣ Exclusions & Limitations'?: {
+      'Not Covered'?: string[];
+    };
     '6️⃣ Potential Loopholes & Important Considerations'?: {
       'Important Points to Note'?: string[];
     };
   };
+  additional_information?: string[];
 }
+
+// Helper function to extract currency value from string like "₹5" or "₹5 lakh"
+const extractCurrencyValue = (value: string | undefined): number => {
+  if (!value) return 500000; // Default value
+  
+  // Remove all non-numeric characters except decimal point
+  const numericValue = value.replace(/[^\d.]/g, '');
+  
+  if (!numericValue || isNaN(Number(numericValue))) return 500000;
+  
+  // Convert to number and check for lakhs (if value contains "lakh" or is very small like 2-10)
+  const number = parseFloat(numericValue);
+  
+  // If the number is very small (like 2-10), assume it's in lakhs
+  if (number < 20) {
+    return number * 100000; // Convert lakhs to rupees
+  }
+  
+  return number;
+};
 
 // Transform API response to expected format
 const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult => {
   console.log('Transforming API response:', apiResponse);
   
-  // Extract sum_assured and convert to number (already in INR)
-  const sumAssured = apiResponse.coverage_details?.sum_assured 
-    ? parseFloat(apiResponse.coverage_details.sum_assured) * 100000 // Convert lakhs to rupees
-    : 500000; // Default value
+  // Extract policy details from either format
+  const policyName = 
+    apiResponse.content?.['1️⃣ Introduction']?.['Policy Name'] || 
+    apiResponse.policy_details?.policy_name || 
+    'Insurance Policy';
+    
+  const policyNumber = 
+    apiResponse.content?.['1️⃣ Introduction']?.['Policy Number'] || 
+    apiResponse.policy_details?.policy_number;
+    
+  const providerName = 
+    apiResponse.content?.['1️⃣ Introduction']?.['Issued by'] || 
+    apiResponse.policy_details?.insurer_name;
   
-  // Extract loopholes from the response
-  let loopholes: string[] = [];
+  // Extract sum assured from either format
+  const sumAssuredStr = 
+    apiResponse.content?.['2️⃣ Coverage Overview']?.['Sum Assured'] || 
+    apiResponse.coverage_details?.sum_assured;
+    
+  const sumAssured = extractCurrencyValue(sumAssuredStr);
   
-  // Check for loopholes in the new API response format
-  if (apiResponse.content && 
-      apiResponse.content['6️⃣ Potential Loopholes & Important Considerations'] && 
-      apiResponse.content['6️⃣ Potential Loopholes & Important Considerations']['Important Points to Note']) {
-    loopholes = apiResponse.content['6️⃣ Potential Loopholes & Important Considerations']['Important Points to Note'];
-  } else if (apiResponse.potential_loopholes) {
-    // Fallback to direct potential_loopholes field if available
-    loopholes = apiResponse.potential_loopholes;
-  } else {
-    // Default fallback loopholes
-    loopholes = [
+  // Extract benefits from either format
+  const benefits = 
+    apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'] || 
+    apiResponse.coverage_details?.additional_benefits || 
+    ['Standard coverage protection', 'Basic liability coverage'];
+  
+  // Extract exclusions from either format
+  const exclusions = 
+    apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'] || 
+    apiResponse.exclusions || 
+    [];
+  
+  // Extract loopholes from either format
+  const loopholes = 
+    apiResponse.content?.['6️⃣ Potential Loopholes & Important Considerations']?.['Important Points to Note'] || 
+    apiResponse.potential_loopholes || 
+    [
       'Coverage may be void if property is unoccupied for more than 30 days',
       'Claims for high-value items require prior registration',
       'Damage due to failure to maintain property may be rejected'
     ];
+  
+  // Create appropriate recommendations based on the document
+  const recommendations = [
+    {
+      type: 'info' as const,
+      title: 'Coverage Summary',
+      description: `Your policy provides total coverage of ₹${sumAssured.toLocaleString('en-IN')} for ${apiResponse.content?.['2️⃣ Coverage Overview']?.['Type of Insurance'] || apiResponse.coverage_details?.type || 'insurance protection'}.`,
+    }
+  ];
+  
+  // Add warnings based on exclusions and loopholes
+  if (exclusions.length > 0) {
+    recommendations.push({
+      type: 'warning' as const,
+      title: 'Review Exclusions',
+      description: 'Your policy has some exclusions. Review them carefully to understand what is not covered.',
+    });
   }
   
+  if (loopholes.length > 0) {
+    recommendations.push({
+      type: 'warning' as const,
+      title: 'Be Aware of Loopholes',
+      description: 'We identified potential loopholes in your policy. Review these carefully to understand potential coverage gaps.',
+    });
+  }
+  
+  // Add recommendation about coverage level
+  recommendations.push({
+    type: 'success' as const,
+    title: 'Good Coverage Level',
+    description: 'Your coverage level appears adequate based on standard recommendations.',
+  });
+  
+  // Calculate derived values based on the sum assured
+  const personalProperty = Math.round(sumAssured * 0.5); // 50% of sum assured
+  const liability = Math.round(sumAssured * 0.3); // 30% of sum assured
+  
   return {
-    policyName: apiResponse.policy_details?.policy_name || 'Insurance Policy',
-    policyNumber: apiResponse.policy_details?.policy_number,
-    providerName: apiResponse.policy_details?.insurer_name,
+    policyName,
+    policyNumber,
+    providerName,
     summary: {
       coverageAmount: sumAssured,
-      personalProperty: sumAssured * 0.5, // Example calculation
-      liability: sumAssured * 0.3, // Example calculation
+      personalProperty,
+      liability,
       waterDamageCovered: true, // Default values
       theftCovered: true, // Default values
     },
-    exclusions: apiResponse.exclusions || [],
-    benefits: apiResponse.coverage_details?.additional_benefits || 
-      ['Standard coverage protection', 'Basic liability coverage'],
-    loopholes: loopholes,
+    exclusions,
+    benefits,
+    loopholes,
     deductibles: {
       standard: 1000, // Default values
       windHail: 'Not applicable',
     },
-    recommendations: [
-      {
-        type: 'info',
-        title: 'Coverage Summary',
-        description: `Your policy provides total coverage of ₹${sumAssured.toLocaleString('en-IN')} for ${apiResponse.coverage_details?.type || 'insurance protection'}.`,
-      },
-      {
-        type: 'warning',
-        title: 'Review Exclusions',
-        description: 'Your policy has some exclusions. Review them carefully to understand what is not covered.',
-      },
-      {
-        type: 'success',
-        title: 'Good Coverage Level',
-        description: 'Your coverage level appears adequate based on standard recommendations.',
-      },
-    ],
+    recommendations,
     rawApiResponse: apiResponse // Include the complete API response
   };
 };
