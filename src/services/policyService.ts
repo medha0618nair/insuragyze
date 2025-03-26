@@ -55,6 +55,12 @@ interface ApiResponse {
     contact?: string;
     timeframe?: string;
   };
+  potential_loopholes?: string[]; // Add this field to the interface
+  content?: {
+    '6️⃣ Potential Loopholes & Important Considerations'?: {
+      'Important Points to Note'?: string[];
+    };
+  };
 }
 
 // Transform API response to expected format
@@ -65,6 +71,26 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   const sumAssured = apiResponse.coverage_details?.sum_assured 
     ? parseFloat(apiResponse.coverage_details.sum_assured) * 100000 // Convert lakhs to rupees
     : 500000; // Default value
+  
+  // Extract loopholes from the response
+  let loopholes: string[] = [];
+  
+  // Check for loopholes in the new API response format
+  if (apiResponse.content && 
+      apiResponse.content['6️⃣ Potential Loopholes & Important Considerations'] && 
+      apiResponse.content['6️⃣ Potential Loopholes & Important Considerations']['Important Points to Note']) {
+    loopholes = apiResponse.content['6️⃣ Potential Loopholes & Important Considerations']['Important Points to Note'];
+  } else if (apiResponse.potential_loopholes) {
+    // Fallback to direct potential_loopholes field if available
+    loopholes = apiResponse.potential_loopholes;
+  } else {
+    // Default fallback loopholes
+    loopholes = [
+      'Coverage may be void if property is unoccupied for more than 30 days',
+      'Claims for high-value items require prior registration',
+      'Damage due to failure to maintain property may be rejected'
+    ];
+  }
   
   return {
     policyName: apiResponse.policy_details?.policy_name || 'Insurance Policy',
@@ -80,11 +106,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     exclusions: apiResponse.exclusions || [],
     benefits: apiResponse.coverage_details?.additional_benefits || 
       ['Standard coverage protection', 'Basic liability coverage'],
-    loopholes: [
-      'Coverage may be void if property is unoccupied for more than 30 days',
-      'Claims for high-value items require prior registration',
-      'Damage due to failure to maintain property may be rejected'
-    ],
+    loopholes: loopholes,
     deductibles: {
       standard: 1000, // Default values
       windHail: 'Not applicable',

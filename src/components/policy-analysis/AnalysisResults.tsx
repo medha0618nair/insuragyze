@@ -20,7 +20,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     coverage: true,
     exclusions: false,
     benefits: false,
-    loopholes: false,
+    loopholes: true, // Set loopholes to expanded by default
     deductibles: false,
     recommendations: true,
     rawData: false
@@ -207,7 +207,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               onClick={() => toggleSection('loopholes')}
             >
               <h3 className="text-lg font-semibold text-insura-neon flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" /> Potential Loopholes
+                <AlertCircle className="w-5 h-5 mr-2" /> Potential Loopholes & Important Considerations
               </h3>
               {expandedSections.loopholes ? 
                 <ArrowUp className="w-5 h-5 text-gray-400" /> : 
