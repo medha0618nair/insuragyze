@@ -1,201 +1,230 @@
 
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Menu, 
-  X, 
-  Shield, 
-  Home, 
-  User, 
-  FileText, 
-  MessageSquare, 
-  CheckSquare, 
-  BarChart3, 
-  Calculator, 
-  Search,
-  AlertTriangle
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { Menu, X, LogOut, User } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
-import { useAuth } from '@/hooks/use-auth';
+import { Link, useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-interface NavItem {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-}
-
-export const Navbar = () => {
+const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const location = useLocation();
-  const { user, logout } = useAuth();
-  
-  const navItems: NavItem[] = [
-    { label: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
-    { label: 'Insurance Plans', path: '/insurance', icon: <Shield className="h-5 w-5" /> },
-    { label: 'Policy Analysis', path: '/policy-analysis', icon: <FileText className="h-5 w-5" /> },
-    { label: 'Chat Assistant', path: '/chat-assistant', icon: <MessageSquare className="h-5 w-5" /> },
-    { label: 'Claim Checker', path: '/claim-checker', icon: <CheckSquare className="h-5 w-5" /> },
-    { label: 'Coverage Optimizer', path: '/coverage-optimizer', icon: <BarChart3 className="h-5 w-5" /> },
-    { label: 'Premium Calculator', path: '/premium-calculator', icon: <Calculator className="h-5 w-5" /> },
-    { label: 'Insurance Finder', path: '/insurance-finder', icon: <Search className="h-5 w-5" /> },
-    { label: 'Fraud Detection', path: '/fraud-detection', icon: <AlertTriangle className="h-5 w-5" /> },
-  ];
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    // Get initial user session
+    const getInitialSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user || null);
+    };
+    
+    getInitialSession();
+    
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const closeMenu = () => {
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully",
+      });
+      
+      // Close the menu
+      setIsMenuOpen(false);
+      
+      // Navigate to home
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: error.message || "An error occurred while signing out",
+      });
+    }
+  };
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    // Close mobile menu after navigation
     setIsMenuOpen(false);
   };
 
+  // Get user name and avatar from Supabase user metadata
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const userAvatar = user?.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`;
+
   return (
-    <nav className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo and desktop navigation */}
+    <nav className="bg-black/95 backdrop-blur-md shadow-md border-b border-insura-neon/20 fixed w-full z-50">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex justify-between items-center">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <Shield className="h-8 w-8 text-insura-neon" />
-              <span className="ml-2 text-xl font-bold tracking-wider">InsuraGuard</span>
+              <span className="text-2xl font-bold insura-gradient-text">Insura<span className="text-insura-neon">AI</span></span>
             </Link>
-            <div className="hidden md:block ml-10">
+            <div className="hidden md:flex ml-10 space-x-6">
+              <button 
+                onClick={() => scrollToSection('features')} 
+                className="text-gray-300 hover:text-insura-neon transition-colors"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => scrollToSection('policy-analyzer')} 
+                className="text-gray-300 hover:text-insura-neon transition-colors"
+              >
+                Policy Analyzer
+              </button>
+              <button 
+                onClick={() => scrollToSection('chat-assistant')} 
+                className="text-gray-300 hover:text-insura-neon transition-colors"
+              >
+                Chat Assistant
+              </button>
+              <button 
+                onClick={() => scrollToSection('ai-tools')} 
+                className="text-gray-300 hover:text-insura-neon transition-colors"
+              >
+                AI Tools
+              </button>
+            </div>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
               <div className="flex items-center space-x-4">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`px-3 py-2 rounded-md text-sm font-medium flex items-center hover:bg-gray-800 ${
-                      location.pathname === item.path ? 'bg-gray-800 text-insura-neon' : 'text-gray-300'
-                    }`}
-                    onClick={closeMenu}
-                  >
-                    <span className="mr-1.5">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                ))}
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border border-insura-neon/30">
+                    <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+                  </div>
+                  <span className="text-gray-300">{userName}</span>
+                </div>
+                <ButtonCustom 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-insura-neon hover:text-white hover:bg-insura-neon/20"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </ButtonCustom>
               </div>
-            </div>
-          </div>
-
-          {/* User authentication buttons/profile */}
-          <div className="hidden md:block">
-            <div className="flex items-center">
-              {user ? (
-                <div className="flex items-center space-x-4">
-                  <Link to="/profile" className="flex items-center text-sm text-gray-300 hover:text-white">
-                    <img
-                      className="h-8 w-8 rounded-full object-cover"
-                      src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
-                      alt="User avatar"
-                    />
-                    <span className="ml-2">{user.name}</span>
-                  </Link>
-                  <ButtonCustom
-                    variant="outline"
-                    size="sm"
-                    onClick={logout}
-                  >
-                    Sign Out
+            ) : (
+              <>
+                <Link to="/auth/signin">
+                  <ButtonCustom variant="ghost" size="sm" 
+                    className="text-insura-neon hover:text-white hover:bg-insura-neon/20">
+                    Sign In
                   </ButtonCustom>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-4">
-                  <Link to="/sign-in">
-                    <ButtonCustom variant="ghost" size="sm">
-                      Sign In
-                    </ButtonCustom>
-                  </Link>
-                  <Link to="/sign-up">
-                    <ButtonCustom variant="primary" size="sm">
-                      Sign Up
-                    </ButtonCustom>
-                  </Link>
-                </div>
-              )}
-            </div>
+                </Link>
+                <Link to="/auth/signup">
+                  <ButtonCustom variant="primary" size="sm" 
+                    className="bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20">
+                    Get Started
+                  </ButtonCustom>
+                </Link>
+              </>
+            )}
           </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              className="text-gray-300 hover:text-white focus:outline-none"
+          
+          <div className="md:hidden">
+            <button 
               onClick={toggleMenu}
+              className="text-gray-300 hover:text-insura-neon transition-colors focus:outline-none"
             >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
-
+      
       {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-gray-800">
-          <div className="px-2 pt-2 pb-4 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${
-                  location.pathname === item.path ? 'bg-gray-900 text-insura-neon' : 'text-gray-300 hover:bg-gray-700'
-                }`}
-                onClick={closeMenu}
-              >
-                <span className="mr-3">{item.icon}</span>
-                {item.label}
-              </Link>
-            ))}
-            
-            {/* Mobile authentication buttons */}
-            <div className="pt-4 pb-3 border-t border-gray-700">
-              {user ? (
-                <>
-                  <div className="flex items-center px-3">
-                    <div className="flex-shrink-0">
-                      <img
-                        className="h-10 w-10 rounded-full object-cover"
-                        src={user.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
-                        alt="User avatar"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-white">{user.name}</div>
-                      <div className="text-sm font-medium text-gray-400">{user.email}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 px-2 space-y-1">
-                    <Link to="/profile" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700">
-                      Your Profile
-                    </Link>
-                    <button
-                      className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700"
-                      onClick={logout}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="mt-3 px-2 space-y-1">
-                  <Link to="/sign-in" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700">
-                    Sign In
-                  </Link>
-                  <Link to="/sign-up" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700">
-                    Sign Up
-                  </Link>
+      <div className={cn(
+        "md:hidden transition-all duration-300 ease-in-out overflow-hidden",
+        isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+      )}>
+        <div className="px-4 py-3 space-y-3 bg-black/95 backdrop-blur-md shadow-md">
+          <button 
+            onClick={() => scrollToSection('features')}
+            className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors"
+          >
+            Features
+          </button>
+          <button 
+            onClick={() => scrollToSection('policy-analyzer')}
+            className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors"
+          >
+            Policy Analyzer
+          </button>
+          <button 
+            onClick={() => scrollToSection('chat-assistant')}
+            className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors"
+          >
+            Chat Assistant
+          </button>
+          <button 
+            onClick={() => scrollToSection('ai-tools')}
+            className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors"
+          >
+            AI Tools
+          </button>
+          
+          {user ? (
+            <div className="pt-2 space-y-2">
+              <div className="flex items-center space-x-2 px-3 py-2">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-insura-neon/30">
+                  <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
                 </div>
-              )}
+                <span className="text-gray-300">{userName}</span>
+              </div>
+              
+              <button 
+                onClick={handleSignOut}
+                className="block w-full text-left px-3 py-2 rounded-md hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors flex items-center"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="pt-2 flex flex-col space-y-2">
+              <Link to="/auth/signin" className="w-full">
+                <ButtonCustom variant="ghost" size="sm" fullWidth 
+                  className="text-insura-neon hover:bg-insura-neon/10">
+                  Sign In
+                </ButtonCustom>
+              </Link>
+              <Link to="/auth/signup" className="w-full">
+                <ButtonCustom variant="primary" size="sm" fullWidth
+                  className="bg-gradient-to-r from-insura-neon to-insura-purple">
+                  Get Started
+                </ButtonCustom>
+              </Link>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };
 
-// Add default export
 export default Navbar;
