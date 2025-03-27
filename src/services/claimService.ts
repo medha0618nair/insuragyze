@@ -1,4 +1,3 @@
-
 import { FRAUD_DETECTION_API } from './apiConfig';
 
 export interface ClaimData {
@@ -11,15 +10,15 @@ export interface ClaimData {
   CUSTOMER_EDUCATION_LEVEL: string;
   CLAIM_STATUS: string;
   INCIDENT_SEVERITY: string;
-  PREMIUM_AMOUNT: number | string;
-  CLAIM_AMOUNT: number | string;
-  AGE: number | string;
-  TENURE: number | string;
-  NO_OF_FAMILY_MEMBERS: number | string;
-  days_to_loss: number | string;
-  claim_premium_ratio: number | string;
-  INCIDENT_HOUR_OF_THE_DAY: number | string;
-  ANY_INJURY: number | string;
+  PREMIUM_AMOUNT: string | number;
+  CLAIM_AMOUNT: string | number;
+  AGE: string | number;
+  TENURE: string | number;
+  NO_OF_FAMILY_MEMBERS: string | number;
+  days_to_loss: string | number;
+  claim_premium_ratio: string | number;
+  INCIDENT_HOUR_OF_THE_DAY: string | number;
+  ANY_INJURY: string | number;
 }
 
 export interface FraudCheckResult {

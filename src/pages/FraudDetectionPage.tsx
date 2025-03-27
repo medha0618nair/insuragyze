@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
@@ -27,14 +28,14 @@ const FraudDetectionPage = () => {
     CUSTOMER_EDUCATION_LEVEL: '',
     CLAIM_STATUS: '',
     INCIDENT_SEVERITY: '',
-    PREMIUM_AMOUNT: 0,
-    CLAIM_AMOUNT: 0,
-    AGE: 0,
-    TENURE: 0,
-    NO_OF_FAMILY_MEMBERS: 0,
-    days_to_loss: 0,
-    claim_premium_ratio: 0,
-    INCIDENT_HOUR_OF_THE_DAY: 0,
+    PREMIUM_AMOUNT: '',
+    CLAIM_AMOUNT: '',
+    AGE: '',
+    TENURE: '',
+    NO_OF_FAMILY_MEMBERS: '',
+    days_to_loss: '',
+    claim_premium_ratio: '',
+    INCIDENT_HOUR_OF_THE_DAY: '',
     ANY_INJURY: 0,
   });
   const [claimDetails, setClaimDetails] = useState<ClaimDetails>({
@@ -83,12 +84,20 @@ const FraudDetectionPage = () => {
       ];
       
       numericFields.forEach(field => {
-        numericClaimData[field as keyof ClaimData] = parseFloat(claimData[field as keyof ClaimData] as string) || 0;
+        // Use type assertion to tell TypeScript that we're accessing a key of numericClaimData
+        const key = field as keyof ClaimData;
+        // Convert string to number and assign it back
+        numericClaimData[key] = parseFloat(numericClaimData[key] as string) || 0;
       });
       
       // Calculate claim_premium_ratio if not set manually
-      if (!numericClaimData.claim_premium_ratio && numericClaimData.PREMIUM_AMOUNT > 0) {
-        numericClaimData.claim_premium_ratio = numericClaimData.CLAIM_AMOUNT / numericClaimData.PREMIUM_AMOUNT;
+      if (
+        (!numericClaimData.claim_premium_ratio || numericClaimData.claim_premium_ratio === '') && 
+        parseFloat(numericClaimData.PREMIUM_AMOUNT as string) > 0
+      ) {
+        const claimAmount = parseFloat(numericClaimData.CLAIM_AMOUNT as string) || 0;
+        const premiumAmount = parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
+        numericClaimData.claim_premium_ratio = claimAmount / premiumAmount;
       }
 
       // Call the API service with our data and the policy number
