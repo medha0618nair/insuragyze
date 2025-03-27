@@ -16,7 +16,8 @@ const PolicyAnalysisPage = () => {
   const [analysisResult, setAnalysisResult] = useState<PolicyAnalysisResult | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = async (selectedFile: File) => {
+  const handleFileUpload = (selectedFile: File) => {
+    console.log('File selected:', selectedFile.name, selectedFile.type, selectedFile.size);
     setFile(selectedFile);
   };
 
@@ -37,7 +38,11 @@ const PolicyAnalysisPage = () => {
       formData.append('document', file);
       
       console.log('Analyzing document:', file.name, file.type, file.size);
+      console.log('FormData keys:', [...formData.keys()]);
+      
       const result = await analyzePolicyDocument(formData);
+      console.log('Analysis result received:', result);
+      
       setAnalysisResult(result);
       
       toast({

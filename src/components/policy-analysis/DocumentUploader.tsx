@@ -5,7 +5,7 @@ import { ButtonCustom } from '@/components/ui/button-custom';
 import { useToast } from '@/hooks/use-toast';
 
 interface DocumentUploaderProps {
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File) => void;
   onAnalyze: () => Promise<void>;
   isAnalyzing: boolean;
   file: File | null;
@@ -56,6 +56,8 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
       });
       return;
     }
+    
+    console.log('File selected in DocumentUploader:', selectedFile.name);
     onUpload(selectedFile);
   };
 
