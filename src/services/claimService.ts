@@ -1,3 +1,4 @@
+
 import { FRAUD_DETECTION_API } from './apiConfig';
 
 export interface ClaimData {
@@ -57,60 +58,54 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
     };
 
     console.log("Sending data to fraud detection API:", validatedData);
+    
+    // Make the API call to the endpoint
+    const response = await fetch(`${FRAUD_DETECTION_API}/predict`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(validatedData),
+    });
 
-    // Try the API call, but fall back to the mock data if it fails
-    try {
-      // Make the API call to the endpoint
-      const response = await fetch(`${FRAUD_DETECTION_API}/predict`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(validatedData),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`API Error: ${response.status} - ${errorText}`);
-        
-        // Fallback to mock data if API fails
-        return createFallbackResult(policyNumber, validatedData);
-      }
-
-      // Parse the API response
-      const apiResponse = await response.json();
-      console.log("API Response:", apiResponse);
-
-      // Convert the API's response format to our application's expected format
-      const fraudProbability = apiResponse.fraud_probability * 100;
-      const isHighRisk = apiResponse.is_high_risk;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error: ${response.status} - ${errorText}`);
       
-      // Determine risk level based on fraud probability and is_high_risk flag
-      let riskLevel: 'low' | 'medium' | 'high';
-      if (isHighRisk) {
-        riskLevel = 'high';
-      } else if (fraudProbability > 50) {
-        riskLevel = 'medium';
-      } else {
-        riskLevel = 'low';
-      }
-
-      // Format the result in our application's expected structure
-      const result: FraudCheckResult = {
-        id: `FD-${Math.floor(Math.random() * 100000)}`,
-        policyNumber: policyNumber,
-        fraudProbability: fraudProbability,
-        riskLevel: riskLevel,
-        riskFactors: apiResponse.risk_factors || [],
-        timestamp: new Date().toISOString()
-      };
-
-      return result;
-    } catch (fetchError) {
-      console.error('Fetch error:', fetchError);
-      return createFallbackResult(policyNumber, validatedData);
+      // Fallback to mock data if API fails
+      throw new Error(`API responded with status: ${response.status}`);
     }
+
+    // Parse the API response
+    const apiResponse = await response.json();
+    console.log("API Response:", apiResponse);
+
+    // Convert the API's response format to our application's expected format
+    const fraudProbability = apiResponse.fraud_probability * 100;
+    const isHighRisk = apiResponse.is_high_risk;
+    
+    // Determine risk level based on fraud probability and is_high_risk flag
+    let riskLevel: 'low' | 'medium' | 'high';
+    if (isHighRisk) {
+      riskLevel = 'high';
+    } else if (fraudProbability > 50) {
+      riskLevel = 'medium';
+    } else {
+      riskLevel = 'low';
+    }
+
+    // Format the result in our application's expected structure
+    const result: FraudCheckResult = {
+      id: `FD-${Math.floor(Math.random() * 100000)}`,
+      policyNumber: policyNumber,
+      fraudProbability: fraudProbability,
+      riskLevel: riskLevel,
+      riskFactors: apiResponse.risk_factors || [],
+      timestamp: new Date().toISOString()
+    };
+
+    return result;
   } catch (error) {
     console.error('Fraud Detection API Error:', error);
     return createFallbackResult(policyNumber);
