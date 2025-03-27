@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -67,10 +66,8 @@ const CoverageOptimizerPage = () => {
       updatedConditions.splice(index, 1);
     } else {
       if (condition === "None") {
-        // If "None" is selected, clear all other conditions
         updatedConditions.length = 0;
       } else {
-        // If any other condition is selected, remove "None" if it exists
         const noneIndex = updatedConditions.indexOf("None");
         if (noneIndex !== -1) {
           updatedConditions.splice(noneIndex, 1);
@@ -89,63 +86,60 @@ const CoverageOptimizerPage = () => {
     e.preventDefault();
     setLoading(true);
     
-    // In a real application, we would call the API
-    // For demo purposes, we'll simulate the API call
     setTimeout(() => {
       setLoading(false);
       
-      // Simulated results
       setResults({
         recommendations: [
           {
             type: "increase",
             coverage: "home",
-            current: parseInt(formData.currentCoverage.home),
-            recommended: parseInt(formData.currentCoverage.home) * 1.2,
+            current: convertToINR(parseInt(formData.currentCoverage.home)),
+            recommended: convertToINR(parseInt(formData.currentCoverage.home) * 1.2),
             reason: "Your home insurance coverage is below the recommended amount for your property value."
           },
           {
             type: "decrease",
             coverage: "auto",
-            current: parseInt(formData.currentCoverage.auto),
-            recommended: parseInt(formData.currentCoverage.auto) * 0.85,
+            current: convertToINR(parseInt(formData.currentCoverage.auto)),
+            recommended: convertToINR(parseInt(formData.currentCoverage.auto) * 0.85),
             reason: "Your auto insurance coverage is higher than necessary for your vehicle value."
           },
           {
             type: "maintain",
             coverage: "health",
-            current: parseInt(formData.currentCoverage.health),
-            recommended: parseInt(formData.currentCoverage.health),
+            current: convertToINR(parseInt(formData.currentCoverage.health)),
+            recommended: convertToINR(parseInt(formData.currentCoverage.health)),
             reason: "Your health insurance coverage is appropriate for your needs."
           },
           {
             type: "increase",
             coverage: "life",
-            current: parseInt(formData.currentCoverage.life),
-            recommended: parseInt(formData.currentCoverage.life) * 1.5,
+            current: convertToINR(parseInt(formData.currentCoverage.life)),
+            recommended: convertToINR(parseInt(formData.currentCoverage.life) * 1.5),
             reason: "With your number of dependents, you should increase your life insurance coverage."
           }
         ],
         savings: {
           current: {
-            monthly: parseInt(formData.currentPremiums.home) + 
+            monthly: convertToINR(parseInt(formData.currentPremiums.home) + 
                      parseInt(formData.currentPremiums.auto) + 
                      parseInt(formData.currentPremiums.health) + 
-                     parseInt(formData.currentPremiums.life),
-            annual: (parseInt(formData.currentPremiums.home) + 
+                     parseInt(formData.currentPremiums.life)),
+            annual: convertToINR((parseInt(formData.currentPremiums.home) + 
                      parseInt(formData.currentPremiums.auto) + 
                      parseInt(formData.currentPremiums.health) + 
-                     parseInt(formData.currentPremiums.life)) * 12
+                     parseInt(formData.currentPremiums.life)) * 12)
           },
           optimized: {
-            monthly: (parseInt(formData.currentPremiums.home) * 1.1) + 
+            monthly: convertToINR((parseInt(formData.currentPremiums.home) * 1.1) + 
                      (parseInt(formData.currentPremiums.auto) * 0.8) + 
                      parseInt(formData.currentPremiums.health) + 
-                     (parseInt(formData.currentPremiums.life) * 1.3),
-            annual: ((parseInt(formData.currentPremiums.home) * 1.1) + 
+                     (parseInt(formData.currentPremiums.life) * 1.3)),
+            annual: convertToINR(((parseInt(formData.currentPremiums.home) * 1.1) + 
                      (parseInt(formData.currentPremiums.auto) * 0.8) + 
                      parseInt(formData.currentPremiums.health) + 
-                     (parseInt(formData.currentPremiums.life) * 1.3)) * 12
+                     (parseInt(formData.currentPremiums.life) * 1.3)) * 12)
           }
         },
         riskScore: {
@@ -162,11 +156,16 @@ const CoverageOptimizerPage = () => {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       maximumFractionDigits: 0
     }).format(value);
+  };
+
+  const convertToINR = (usdValue: number): number => {
+    const exchangeRate = 83.5;
+    return usdValue * exchangeRate;
   };
 
   return (
