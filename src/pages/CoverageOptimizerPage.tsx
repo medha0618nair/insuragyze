@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -37,6 +38,9 @@ const CoverageOptimizerPage = () => {
     "None", "High Blood Pressure", "Diabetes", "Heart Disease", 
     "Cancer", "Asthma", "Arthritis", "Obesity"
   ];
+
+  // Exchange rate for USD to INR conversion
+  const exchangeRate = 83.5;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -89,54 +93,55 @@ const CoverageOptimizerPage = () => {
     setTimeout(() => {
       setLoading(false);
       
+      // Convert all USD values to INR in the results
       setResults({
         recommendations: [
           {
             type: "increase",
             coverage: "home",
-            current: convertToINR(parseInt(formData.currentCoverage.home)),
-            recommended: convertToINR(parseInt(formData.currentCoverage.home) * 1.2),
+            current: convertUSDtoINR(parseInt(formData.currentCoverage.home)),
+            recommended: convertUSDtoINR(parseInt(formData.currentCoverage.home) * 1.2),
             reason: "Your home insurance coverage is below the recommended amount for your property value."
           },
           {
             type: "decrease",
             coverage: "auto",
-            current: convertToINR(parseInt(formData.currentCoverage.auto)),
-            recommended: convertToINR(parseInt(formData.currentCoverage.auto) * 0.85),
+            current: convertUSDtoINR(parseInt(formData.currentCoverage.auto)),
+            recommended: convertUSDtoINR(parseInt(formData.currentCoverage.auto) * 0.85),
             reason: "Your auto insurance coverage is higher than necessary for your vehicle value."
           },
           {
             type: "maintain",
             coverage: "health",
-            current: convertToINR(parseInt(formData.currentCoverage.health)),
-            recommended: convertToINR(parseInt(formData.currentCoverage.health)),
+            current: convertUSDtoINR(parseInt(formData.currentCoverage.health)),
+            recommended: convertUSDtoINR(parseInt(formData.currentCoverage.health)),
             reason: "Your health insurance coverage is appropriate for your needs."
           },
           {
             type: "increase",
             coverage: "life",
-            current: convertToINR(parseInt(formData.currentCoverage.life)),
-            recommended: convertToINR(parseInt(formData.currentCoverage.life) * 1.5),
+            current: convertUSDtoINR(parseInt(formData.currentCoverage.life)),
+            recommended: convertUSDtoINR(parseInt(formData.currentCoverage.life) * 1.5),
             reason: "With your number of dependents, you should increase your life insurance coverage."
           }
         ],
         savings: {
           current: {
-            monthly: convertToINR(parseInt(formData.currentPremiums.home) + 
+            monthly: convertUSDtoINR(parseInt(formData.currentPremiums.home) + 
                      parseInt(formData.currentPremiums.auto) + 
                      parseInt(formData.currentPremiums.health) + 
                      parseInt(formData.currentPremiums.life)),
-            annual: convertToINR((parseInt(formData.currentPremiums.home) + 
+            annual: convertUSDtoINR((parseInt(formData.currentPremiums.home) + 
                      parseInt(formData.currentPremiums.auto) + 
                      parseInt(formData.currentPremiums.health) + 
                      parseInt(formData.currentPremiums.life)) * 12)
           },
           optimized: {
-            monthly: convertToINR((parseInt(formData.currentPremiums.home) * 1.1) + 
+            monthly: convertUSDtoINR((parseInt(formData.currentPremiums.home) * 1.1) + 
                      (parseInt(formData.currentPremiums.auto) * 0.8) + 
                      parseInt(formData.currentPremiums.health) + 
                      (parseInt(formData.currentPremiums.life) * 1.3)),
-            annual: convertToINR(((parseInt(formData.currentPremiums.home) * 1.1) + 
+            annual: convertUSDtoINR(((parseInt(formData.currentPremiums.home) * 1.1) + 
                      (parseInt(formData.currentPremiums.auto) * 0.8) + 
                      parseInt(formData.currentPremiums.health) + 
                      (parseInt(formData.currentPremiums.life) * 1.3)) * 12)
@@ -155,17 +160,18 @@ const CoverageOptimizerPage = () => {
     }, 2000);
   };
 
+  // Converts USD value to INR
+  const convertUSDtoINR = (usdValue: number): number => {
+    return usdValue * exchangeRate;
+  };
+
+  // Format currency in INR with proper Indian formatting
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(value);
-  };
-
-  const convertToINR = (usdValue: number): number => {
-    const exchangeRate = 83.5;
-    return usdValue * exchangeRate;
   };
 
   return (
@@ -193,6 +199,7 @@ const CoverageOptimizerPage = () => {
                     <h3 className="text-xl font-bold mb-6 text-white">Personal Information</h3>
                     
                     <div className="space-y-4">
+                      {/* Personal Information Form Fields */}
                       <div>
                         <label className="block text-gray-300 mb-2">Age</label>
                         <input
@@ -253,8 +260,9 @@ const CoverageOptimizerPage = () => {
                     <h3 className="text-xl font-bold mt-8 mb-6 text-white">Asset Values</h3>
                     
                     <div className="space-y-4">
+                      {/* Asset Values Form Fields - Update labels to INR */}
                       <div>
-                        <label className="block text-gray-300 mb-2">Property Value ($)</label>
+                        <label className="block text-gray-300 mb-2">Property Value (₹)</label>
                         <input
                           type="number"
                           name="propertyValue"
@@ -266,7 +274,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Vehicle Value ($)</label>
+                        <label className="block text-gray-300 mb-2">Vehicle Value (₹)</label>
                         <input
                           type="number"
                           name="carValue"
@@ -278,7 +286,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Other Assets Value ($)</label>
+                        <label className="block text-gray-300 mb-2">Other Assets Value (₹)</label>
                         <input
                           type="number"
                           name="assetsValue"
@@ -295,8 +303,9 @@ const CoverageOptimizerPage = () => {
                     <h3 className="text-xl font-bold mb-6 text-white">Current Coverage</h3>
                     
                     <div className="space-y-4">
+                      {/* Current Coverage Form Fields - Update labels to INR */}
                       <div>
-                        <label className="block text-gray-300 mb-2">Home Insurance Coverage ($)</label>
+                        <label className="block text-gray-300 mb-2">Home Insurance Coverage (₹)</label>
                         <input
                           type="number"
                           name="currentCoverage.home"
@@ -308,7 +317,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Auto Insurance Coverage ($)</label>
+                        <label className="block text-gray-300 mb-2">Auto Insurance Coverage (₹)</label>
                         <input
                           type="number"
                           name="currentCoverage.auto"
@@ -320,7 +329,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Health Insurance Coverage ($)</label>
+                        <label className="block text-gray-300 mb-2">Health Insurance Coverage (₹)</label>
                         <input
                           type="number"
                           name="currentCoverage.health"
@@ -332,7 +341,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Life Insurance Coverage ($)</label>
+                        <label className="block text-gray-300 mb-2">Life Insurance Coverage (₹)</label>
                         <input
                           type="number"
                           name="currentCoverage.life"
@@ -347,8 +356,9 @@ const CoverageOptimizerPage = () => {
                     <h3 className="text-xl font-bold mt-8 mb-6 text-white">Current Premiums</h3>
                     
                     <div className="space-y-4">
+                      {/* Current Premiums Form Fields - Update labels to INR */}
                       <div>
-                        <label className="block text-gray-300 mb-2">Monthly Home Insurance Premium ($)</label>
+                        <label className="block text-gray-300 mb-2">Monthly Home Insurance Premium (₹)</label>
                         <input
                           type="number"
                           name="currentPremiums.home"
@@ -360,7 +370,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Monthly Auto Insurance Premium ($)</label>
+                        <label className="block text-gray-300 mb-2">Monthly Auto Insurance Premium (₹)</label>
                         <input
                           type="number"
                           name="currentPremiums.auto"
@@ -372,7 +382,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Monthly Health Insurance Premium ($)</label>
+                        <label className="block text-gray-300 mb-2">Monthly Health Insurance Premium (₹)</label>
                         <input
                           type="number"
                           name="currentPremiums.health"
@@ -384,7 +394,7 @@ const CoverageOptimizerPage = () => {
                       </div>
                       
                       <div>
-                        <label className="block text-gray-300 mb-2">Monthly Life Insurance Premium ($)</label>
+                        <label className="block text-gray-300 mb-2">Monthly Life Insurance Premium (₹)</label>
                         <input
                           type="number"
                           name="currentPremiums.life"
