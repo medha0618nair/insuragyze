@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion } from 'lucide-react';
+import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion, List } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 
 interface AnalysisResultsProps {
   result: PolicyAnalysisResult;
@@ -24,7 +24,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     loopholes: true,
     deductibles: false,
     recommendations: true,
-    rawData: false
+    rawData: false,
+    detailedAnalysis: true // New section for detailed analysis
   });
 
   const toggleSection = (section: string) => {
@@ -51,13 +52,18 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     ? (result.rawApiResponse as any).simplified_summary
     : "Your policy has been analyzed and the key points have been extracted. Please review the coverage highlights, benefits, exclusions, and recommendations below.";
 
+  // Get filename from raw response
+  const policyFilename = result.rawApiResponse && (result.rawApiResponse as any).filename 
+    ? (result.rawApiResponse as any).filename 
+    : "Uploaded Document";
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       <Alert className="bg-green-900/20 border border-green-500/30 text-white">
         <CheckCircle className="h-5 w-5 text-green-500" />
         <AlertTitle className="text-white">Analysis Complete</AlertTitle>
         <AlertDescription className="text-gray-300">
-          We've analyzed your policy and simplified the key terms and conditions.
+          We've analyzed your policy document "{policyFilename}" and simplified the key terms and conditions.
         </AlertDescription>
       </Alert>
       
@@ -103,6 +109,160 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               </Card>
             )}
           </div>
+
+          {/* Detailed Analysis Section - New! */}
+          {result.analysis && (
+            <div className="space-y-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer" 
+                onClick={() => toggleSection('detailedAnalysis')}
+              >
+                <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                  <List className="w-5 h-5 mr-2" /> Detailed Analysis
+                </h3>
+                {expandedSections.detailedAnalysis ? 
+                  <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                  <ArrowDown className="w-5 h-5 text-gray-400" />
+                }
+              </div>
+              
+              {expandedSections.detailedAnalysis && (
+                <Card className="bg-black/30 border border-insura-purple/30">
+                  <CardContent className="p-4 space-y-4">
+                    {/* Coverage Highlights */}
+                    {result.analysis.coverage_highlights && result.analysis.coverage_highlights.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-md font-semibold text-insura-neon">Coverage Highlights</h4>
+                        <ul className="space-y-2">
+                          {result.analysis.coverage_highlights.map((highlight, index) => (
+                            <li key={index} className="flex items-start">
+                              <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                              <span className="text-gray-300 text-sm">{highlight}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <Separator className="border-gray-800" />
+                      </div>
+                    )}
+                    
+                    {/* Benefits Sections */}
+                    {result.analysis.benefits && (
+                      <div className="space-y-3">
+                        <h4 className="text-md font-semibold text-insura-neon">Key Benefits</h4>
+                        
+                        {result.analysis.benefits["Medical Benefits"] && result.analysis.benefits["Medical Benefits"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Medical Benefits</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.benefits["Medical Benefits"].map((benefit, index) => (
+                                <li key={index} className="flex items-start">
+                                  <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {result.analysis.benefits["Financial Benefits"] && result.analysis.benefits["Financial Benefits"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Financial Benefits</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.benefits["Financial Benefits"].map((benefit, index) => (
+                                <li key={index} className="flex items-start">
+                                  <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {result.analysis.benefits["Additional Benefits"] && result.analysis.benefits["Additional Benefits"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Additional Benefits</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.benefits["Additional Benefits"].map((benefit, index) => (
+                                <li key={index} className="flex items-start">
+                                  <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{benefit}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        <Separator className="border-gray-800" />
+                      </div>
+                    )}
+                    
+                    {/* Loopholes Section */}
+                    {result.analysis.loopholes && (
+                      <div className="space-y-3">
+                        <h4 className="text-md font-semibold text-insura-neon">Potential Loopholes</h4>
+                        
+                        {result.analysis.loopholes["Ambiguous Language"] && result.analysis.loopholes["Ambiguous Language"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Ambiguous Language</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.loopholes["Ambiguous Language"].slice(0, 5).map((loophole, index) => (
+                                <li key={index} className="flex items-start">
+                                  <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{loophole}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {result.analysis.loopholes["Exclusion Clauses"] && result.analysis.loopholes["Exclusion Clauses"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Exclusion Clauses</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.loopholes["Exclusion Clauses"].map((loophole, index) => (
+                                <li key={index} className="flex items-start">
+                                  <AlertCircle className="w-4 h-4 text-red-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{loophole}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {result.analysis.loopholes["Limitation Flags"] && result.analysis.loopholes["Limitation Flags"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Limitation Flags</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.loopholes["Limitation Flags"].map((loophole, index) => (
+                                <li key={index} className="flex items-start">
+                                  <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{loophole}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {result.analysis.loopholes["Claim Rejection Risks"] && result.analysis.loopholes["Claim Rejection Risks"].length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-white">Claim Rejection Risks</h5>
+                            <ul className="space-y-2">
+                              {result.analysis.loopholes["Claim Rejection Risks"].map((loophole, index) => (
+                                <li key={index} className="flex items-start">
+                                  <AlertCircle className="w-4 h-4 text-red-500 mr-2 mt-1 flex-shrink-0" />
+                                  <span className="text-gray-300 text-sm">{loophole}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
           
           {/* Coverage Section */}
           <div className="space-y-4">
@@ -354,7 +514,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
         </div>
         
         {expandedSections.recommendations && (
-          <Card className="bg-gradient-to-b from-insura-neon/5 to-insura-purple/5 border border-insura-neon/20 shadow-lg">
+          <Card className="bg-gradient-to-b from-insura-neon to-insura-purple border border-insura-neon/20 shadow-lg">
             <CardContent className="p-6">
               <ul className="space-y-4">
                 {result.recommendations.map((rec: any, index: number) => (

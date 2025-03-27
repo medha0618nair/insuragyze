@@ -25,6 +25,21 @@ export interface PolicyAnalysisResult {
     description: string;
   }>;
   rawApiResponse?: object; // Store the complete API response
+  analysis?: {
+    loopholes?: {
+      "Ambiguous Language"?: string[];
+      "Exclusion Clauses"?: string[];
+      "Limitation Flags"?: string[];
+      "Claim Rejection Risks"?: string[];
+    };
+    benefits?: {
+      "Medical Benefits"?: string[];
+      "Financial Benefits"?: string[];
+      "Additional Benefits"?: string[];
+    };
+    major_exclusions?: string[];
+    coverage_highlights?: string[];
+  };
 }
 
 interface ApiResponse {
@@ -89,6 +104,22 @@ interface ApiResponse {
   };
   simplified_summary?: string;
   additional_information?: string[];
+  filename?: string;
+  analysis?: {
+    loopholes?: {
+      "Ambiguous Language"?: string[];
+      "Exclusion Clauses"?: string[];
+      "Limitation Flags"?: string[];
+      "Claim Rejection Risks"?: string[];
+    };
+    benefits?: {
+      "Medical Benefits"?: string[];
+      "Financial Benefits"?: string[];
+      "Additional Benefits"?: string[];
+    };
+    major_exclusions?: string[];
+    coverage_highlights?: string[];
+  };
 }
 
 // Helper function to extract currency value from string like "₹5" or "₹5 lakh"
@@ -119,6 +150,7 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   const policyName = 
     apiResponse.content?.['1️⃣ Introduction']?.['Policy Name'] || 
     apiResponse.policy_details?.policy_name || 
+    apiResponse.filename ||
     'Insurance Policy';
     
   const policyNumber = 
@@ -143,6 +175,13 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     benefits = apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'];
   } else if (apiResponse.coverage_details?.additional_benefits) {
     benefits = apiResponse.coverage_details.additional_benefits;
+  } else if (apiResponse.analysis?.benefits?.["Medical Benefits"]) {
+    // Combine all benefits from the new API format
+    benefits = [
+      ...(apiResponse.analysis.benefits["Medical Benefits"] || []),
+      ...(apiResponse.analysis.benefits["Financial Benefits"] || []),
+      ...(apiResponse.analysis.benefits["Additional Benefits"] || [])
+    ];
   } else {
     benefits = ['Standard coverage protection', 'Basic liability coverage'];
   }
@@ -154,6 +193,8 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     exclusions = apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'];
   } else if (apiResponse.exclusions) {
     exclusions = apiResponse.exclusions;
+  } else if (apiResponse.analysis?.major_exclusions) {
+    exclusions = apiResponse.analysis.major_exclusions;
   } else {
     exclusions = [];
   }
@@ -165,6 +206,14 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     loopholes = apiResponse.content?.['6️⃣ Potential Loopholes & Important Considerations']?.['Important Points to Note'];
   } else if (apiResponse.potential_loopholes) {
     loopholes = apiResponse.potential_loopholes;
+  } else if (apiResponse.analysis?.loopholes) {
+    // Combine all loopholes from the new API format
+    loopholes = [
+      ...(apiResponse.analysis.loopholes["Ambiguous Language"] || []),
+      ...(apiResponse.analysis.loopholes["Exclusion Clauses"] || []),
+      ...(apiResponse.analysis.loopholes["Limitation Flags"] || []),
+      ...(apiResponse.analysis.loopholes["Claim Rejection Risks"] || [])
+    ];
   } else {
     loopholes = [
       'Coverage may be void if property is unoccupied for more than 30 days',
@@ -229,7 +278,8 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
       windHail: 'Not applicable',
     },
     recommendations,
-    rawApiResponse: apiResponse // Include the complete API response
+    rawApiResponse: apiResponse, // Include the complete API response
+    analysis: apiResponse.analysis // Include the structured analysis from the new API
   };
 };
 
