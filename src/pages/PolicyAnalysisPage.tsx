@@ -42,7 +42,7 @@ const PolicyAnalysisPage = () => {
       
       toast({
         title: "Analysis Complete",
-        description: "Your policy has been successfully analyzed",
+        description: "Your policy has been successfully simplified and analyzed",
       });
     } catch (error) {
       console.error("Error analyzing document:", error);

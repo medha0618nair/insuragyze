@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code } from 'lucide-react';
+import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,10 +17,11 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) => {
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    simplified: true, // Set simplified section to expanded by default
     coverage: true,
     exclusions: false,
     benefits: false,
-    loopholes: true, // Set loopholes to expanded by default
+    loopholes: true,
     deductibles: false,
     recommendations: true,
     rawData: false
@@ -44,6 +45,11 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   const formatINR = (amount: number): string => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
+
+  // Extract simplified summary from raw API response if available
+  const simplifiedSummary = result.rawApiResponse && (result.rawApiResponse as any).simplified_summary
+    ? (result.rawApiResponse as any).simplified_summary
+    : "Your policy has been analyzed and the key points have been extracted. Please review the coverage highlights, benefits, exclusions, and recommendations below.";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
@@ -72,6 +78,32 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
         </CardHeader>
         
         <CardContent className="p-6 space-y-6">
+          {/* Simplified Summary Section */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('simplified')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <FileQuestion className="w-5 h-5 mr-2" /> Simplified Policy Summary
+              </h3>
+              {expandedSections.simplified ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.simplified && (
+              <Card className="bg-black/30 border border-insura-purple/30">
+                <CardContent className="p-4">
+                  <div className="bg-gradient-to-r from-insura-neon/10 to-insura-purple/10 p-4 rounded-lg text-gray-200">
+                    {simplifiedSummary}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
           {/* Coverage Section */}
           <div className="space-y-4">
             <div 
