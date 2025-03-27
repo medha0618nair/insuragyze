@@ -56,10 +56,10 @@ const PolicyAnalysisPage = () => {
       });
     } catch (error) {
       console.error("Error analyzing document:", error);
-      setError("There was an error analyzing your document. Please try a different file or try again later.");
+      setError("There was an error analyzing your document. The new API endpoint may require specific file formats. Please try a PDF file or try again later.");
       toast({
         title: "Analysis Failed",
-        description: "There was an error analyzing your document. Please try again.",
+        description: "There was an error analyzing your document. Please try a different file format or try again later.",
         variant: "destructive",
       });
     } finally {

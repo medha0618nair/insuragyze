@@ -1,5 +1,5 @@
 
-import { API_URL, DOC_ANALYSIS_API } from './apiConfig';
+import { DOC_ANALYSIS_API } from './apiConfig';
 
 export interface PolicyAnalysisResult {
   policyName?: string;
@@ -243,7 +243,7 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
     
     if (formData.has('document')) {
       const documentFile = formData.get('document');
-      // Add the file with the field name 'file' instead of 'document'
+      // Add the file with the field name 'file' for the new API
       apiFormData.append('file', documentFile as Blob);
       console.log('FormData keys after conversion:', [...apiFormData.keys()]);
       console.log('File being sent:', documentFile);
