@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { FileText, CheckCircle, AlertCircle, ChevronDown, ChevronUp, PercentCircle } from 'lucide-react';
-import { checkClaimProbability, ClaimData } from '@/services/api';
+import { checkClaimProbability, ClaimData } from '@/services/claimService';
 import { useToast } from '@/hooks/use-toast';
 
 const ClaimCheckerPage = () => {
