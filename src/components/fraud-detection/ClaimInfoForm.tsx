@@ -24,14 +24,14 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
   return (
     <>
       <div className="md:col-span-2 mt-4">
-        <h3 className="text-xl font-semibold mb-2 text-white">Claim Information</h3>
+        <h3 className="text-xl font-semibold mb-2 text-white">Fraud Detection Parameters</h3>
         <p className="text-sm text-gray-400 mb-4">
-          Please provide the following details to analyze the claim for potential fraud.
+          Please provide these 5 key parameters required by our fraud detection AI model.
         </p>
       </div>
 
       <div>
-        <Label htmlFor="CLAIM_AMOUNT" className="text-gray-300">Claim Amount ($)</Label>
+        <Label htmlFor="CLAIM_AMOUNT" className="text-gray-300">1. Claim Amount ($)</Label>
         <Input
           id="CLAIM_AMOUNT"
           name="CLAIM_AMOUNT"
@@ -43,12 +43,12 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           className="bg-gray-800 border-gray-700 text-white"
         />
         <p className="text-xs text-gray-400 mt-1">
-          The total amount being claimed
+          The total amount being claimed in USD
         </p>
       </div>
 
       <div>
-        <Label htmlFor="days_to_loss" className="text-gray-300">Days to Loss</Label>
+        <Label htmlFor="days_to_loss" className="text-gray-300">2. Days to Loss</Label>
         <Input
           id="days_to_loss"
           name="days_to_loss"
@@ -65,7 +65,7 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
       </div>
 
       <div>
-        <Label htmlFor="claim_premium_ratio" className="text-gray-300">Claim/Premium Ratio</Label>
+        <Label htmlFor="claim_premium_ratio" className="text-gray-300">3. Claim/Premium Ratio</Label>
         <Input
           id="claim_premium_ratio"
           name="claim_premium_ratio"
@@ -82,7 +82,7 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
       </div>
 
       <div>
-        <Label htmlFor="avg_claim_amount" className="text-gray-300">Average Claim Amount ($)</Label>
+        <Label htmlFor="avg_claim_amount" className="text-gray-300">4. Average Claim Amount ($)</Label>
         <Input
           id="avg_claim_amount"
           name="avg_claim_amount"
@@ -93,13 +93,13 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           className="bg-gray-800 border-gray-700 text-white"
         />
         <p className="text-xs text-gray-400 mt-1">
-          Average claim amount for similar incidents (optional)
+          Average claim amount for similar incidents
         </p>
       </div>
 
       <div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="quick_claim" className="text-gray-300">Quick Claim Filing</Label>
+          <Label htmlFor="quick_claim" className="text-gray-300">5. Quick Claim Filing</Label>
           <Switch 
             id="quick_claim"
             checked={claimData.quick_claim === 1 || claimData.quick_claim === '1'}
