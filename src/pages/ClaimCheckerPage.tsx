@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { FileText, CheckCircle, AlertCircle, ChevronDown, ChevronUp, PercentCircle } from 'lucide-react';
-import { checkClaimProbability } from '@/services/api';
+import { checkClaimProbability, ClaimData } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 
 const ClaimCheckerPage = () => {
@@ -53,10 +53,71 @@ const ClaimCheckerPage = () => {
     setIsLoading(true);
     
     try {
-      // Fix: The function expects 2 arguments, but only 1 is provided
-      // Adding a dummy policy number as the second argument
-      const result = await checkClaimProbability(formData, "POLICY-" + Math.floor(Math.random() * 10000));
-      setResults(result);
+      // Convert form data to the format expected by the API
+      const claimDataForApi: ClaimData = {
+        INSURANCE_TYPE: formData.claimType,
+        MARITAL_STATUS: "Unknown",  // Default values for required fields
+        EMPLOYMENT_STATUS: "Unknown",
+        RISK_SEGMENTATION: "Medium Risk",
+        HOUSE_TYPE: "Unknown",
+        SOCIAL_CLASS: "Unknown",
+        CUSTOMER_EDUCATION_LEVEL: "Unknown",
+        CLAIM_STATUS: "Open",
+        INCIDENT_SEVERITY: formData.documentationLevel === 'extensive' ? 'Major' : 'Moderate',
+        PREMIUM_AMOUNT: 1000, // Default value
+        CLAIM_AMOUNT: parseInt(formData.claimAmount) || 0,
+        AGE: 30, // Default value
+        TENURE: 1, // Default value 
+        NO_OF_FAMILY_MEMBERS: 1, // Default value
+        days_to_loss: 30, // Default value
+        claim_premium_ratio: (parseInt(formData.claimAmount) || 0) / 1000, // Simple calculation
+        INCIDENT_HOUR_OF_THE_DAY: 12, // Default value, middle of the day
+        ANY_INJURY: 0, // Default: no injury
+      };
+      
+      // Generate a policy number based on the form data if available
+      const policyNumber = formData.policyDetails || `POLICY-${Math.floor(Math.random() * 10000)}`;
+      
+      const result = await checkClaimProbability(claimDataForApi, policyNumber);
+      
+      // Format the result for display
+      const formattedResult = {
+        approvalProbability: Math.max(0, Math.min(100, 100 - result.fraudProbability)),
+        factors: [
+          {
+            factor: "Claim Amount",
+            impact: parseInt(formData.claimAmount) > 50000 ? "negative" : "positive",
+            description: parseInt(formData.claimAmount) > 50000 
+              ? "Your claim amount is relatively high, which may lead to additional scrutiny." 
+              : "Your claim amount is within reasonable limits for this type of claim."
+          },
+          {
+            factor: "Documentation",
+            impact: formData.documentationLevel === 'extensive' ? "positive" : 
+                   formData.documentationLevel === 'minimal' ? "negative" : "neutral",
+            description: `Your ${formData.documentationLevel} level of documentation ${
+              formData.documentationLevel === 'extensive' ? "strongly supports your claim." : 
+              formData.documentationLevel === 'minimal' ? "may not be sufficient to support your claim fully." :
+              "may need some additions to fully support your claim."
+            }`
+          },
+          ...result.riskFactors.map(factor => ({
+            factor: factor,
+            impact: "negative",
+            description: `${factor} may reduce the likelihood of claim approval.`
+          }))
+        ],
+        suggestedActions: [
+          "Provide all requested documentation promptly",
+          formData.documentationLevel !== 'extensive' ? "Improve your documentation with additional evidence" : "Keep your extensive documentation organized",
+          "Be prepared to answer detailed questions about the incident",
+          "Consider providing witness statements if applicable",
+          "Follow up regularly on the status of your claim"
+        ].filter(Boolean)
+      };
+      
+      setResults(formattedResult);
+      
       toast({
         title: "Analysis Complete",
         description: "We've analyzed your potential claim.",
