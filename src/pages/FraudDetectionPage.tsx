@@ -9,53 +9,21 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormField, FormItem, FormLabel, FormControl } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { checkClaimProbability } from '@/services/claimService';
+import { Textarea } from '@/components/ui/textarea';
+import { checkClaimProbability, ClaimData, FraudCheckResult } from '@/services/claimService';
 
 interface ClaimDetails {
-  INSURANCE_TYPE: string;
-  MARITAL_STATUS: string;
-  EMPLOYMENT_STATUS: string;
-  RISK_SEGMENTATION: string;
-  HOUSE_TYPE: string;
-  SOCIAL_CLASS: string;
-  CUSTOMER_EDUCATION_LEVEL: string;
-  CLAIM_STATUS: string;
-  INCIDENT_SEVERITY: string;
-  PREMIUM_AMOUNT: number;
-  CLAIM_AMOUNT: number;
-  AGE: number;
-  TENURE: number;
-  NO_OF_FAMILY_MEMBERS: number;
-  days_to_loss: number;
-  claim_premium_ratio: number;
-  INCIDENT_HOUR_OF_THE_DAY: number;
-  ANY_INJURY: number;
   policyNumber: string;
   claimDescription: string;
   claimDate: string;
   submissionMethod: 'online' | 'phone' | 'agent' | 'email';
 }
 
-interface ClaimResult {
-  id: string;
-  policyNumber: string;
-  fraudProbability: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  riskFactors: string[];
-  timestamp: string;
-}
-
 const FraudDetectionPage = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [claim, setClaim] = useState<ClaimDetails>({
-    policyNumber: '',
-    claimDescription: '',
-    claimDate: '',
-    submissionMethod: 'online',
+  const [claimData, setClaimData] = useState<ClaimData>({
     INSURANCE_TYPE: '',
     MARITAL_STATUS: '',
     EMPLOYMENT_STATUS: '',
@@ -75,23 +43,41 @@ const FraudDetectionPage = () => {
     INCIDENT_HOUR_OF_THE_DAY: 0,
     ANY_INJURY: 0,
   });
-  const [results, setResults] = useState<ClaimResult[]>([]);
+  const [claimDetails, setClaimDetails] = useState<ClaimDetails>({
+    policyNumber: '',
+    claimDescription: '',
+    claimDate: '',
+    submissionMethod: 'online',
+  });
+  const [results, setResults] = useState<FraudCheckResult[]>([]);
   const [showResults, setShowResults] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Convert numeric fields to numbers
-    if (['PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 'NO_OF_FAMILY_MEMBERS', 
-         'days_to_loss', 'claim_premium_ratio', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'].includes(name)) {
-      setClaim(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
-    } else {
-      setClaim(prev => ({ ...prev, [name]: value }));
+    // Handle ClaimData fields
+    if (name in claimData) {
+      // Convert numeric fields to numbers
+      if (['PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 'NO_OF_FAMILY_MEMBERS', 
+           'days_to_loss', 'claim_premium_ratio', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'].includes(name)) {
+        setClaimData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
+      } else {
+        setClaimData(prev => ({ ...prev, [name]: value }));
+      }
+    }
+    // Handle ClaimDetails fields
+    else {
+      setClaimDetails(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setClaim(prev => ({ ...prev, [name]: value }));
+    // Check if the name is a property of claimData
+    if (name in claimData) {
+      setClaimData(prev => ({ ...prev, [name]: value }));
+    } else {
+      setClaimDetails(prev => ({ ...prev, [name as keyof ClaimDetails]: value }));
+    }
   };
 
   const handleCheckClaim = async (e: React.FormEvent) => {
@@ -99,41 +85,21 @@ const FraudDetectionPage = () => {
     setIsLoading(true);
 
     try {
-      // In a real app, this would call the API
-      // For demo purposes, simulate a response
-      const mockResponse = await new Promise<any>((resolve) => {
-        setTimeout(() => {
-          // Simulate API response
-          resolve({
-            id: `FD-${Math.floor(Math.random() * 10000)}`,
-            policyNumber: claim.policyNumber,
-            fraudProbability: Math.random() * 100,
-            riskFactors: [
-              claim.CLAIM_AMOUNT > 5000 ? 'Unusually high claim amount' : 'Claim amount within normal range',
-              'Recent policy changes',
-              claim.INCIDENT_SEVERITY === 'Major' ? 'Severe incident reported' : 'Minor incident',
-              claim.ANY_INJURY > 0 ? 'Injuries reported' : 'No injuries reported'
-            ],
-            timestamp: new Date().toISOString()
-          });
-        }, 1500);
-      });
+      // Calculate claim_premium_ratio if not set manually
+      if (claimData.claim_premium_ratio === 0 && claimData.PREMIUM_AMOUNT > 0) {
+        claimData.claim_premium_ratio = claimData.CLAIM_AMOUNT / claimData.PREMIUM_AMOUNT;
+      }
 
-      // Process response
-      const riskLevel = mockResponse.fraudProbability < 30 ? 'low' : 
-                        mockResponse.fraudProbability < 70 ? 'medium' : 'high';
-
-      const newResult: ClaimResult = {
-        ...mockResponse,
-        riskLevel
-      };
-
-      setResults(prev => [newResult, ...prev]);
+      // Call the API service with our data
+      const result = await checkClaimProbability(claimData, claimDetails.policyNumber);
+      
+      // Add result to our list
+      setResults(prev => [result, ...prev]);
       setShowResults(true);
 
       toast({
         title: "Claim Analysis Complete",
-        description: `Fraud probability analysis for policy ${claim.policyNumber} is complete.`,
+        description: `Fraud probability analysis for policy ${claimDetails.policyNumber} is complete.`,
       });
     } catch (error) {
       console.error("Error analyzing claim:", error);
@@ -204,7 +170,7 @@ const FraudDetectionPage = () => {
                     id="policyNumber"
                     name="policyNumber"
                     placeholder="e.g. POL-12345"
-                    value={claim.policyNumber}
+                    value={claimDetails.policyNumber}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -214,7 +180,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="INSURANCE_TYPE" className="text-gray-300">Insurance Type</Label>
                   <Select 
-                    value={claim.INSURANCE_TYPE} 
+                    value={claimData.INSURANCE_TYPE} 
                     onValueChange={(value) => handleSelectChange('INSURANCE_TYPE', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -237,7 +203,7 @@ const FraudDetectionPage = () => {
                     name="PREMIUM_AMOUNT"
                     type="number"
                     placeholder="e.g. 1200"
-                    value={claim.PREMIUM_AMOUNT || ''}
+                    value={claimData.PREMIUM_AMOUNT || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -251,7 +217,7 @@ const FraudDetectionPage = () => {
                     name="TENURE"
                     type="number"
                     placeholder="e.g. 3"
-                    value={claim.TENURE || ''}
+                    value={claimData.TENURE || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -270,7 +236,7 @@ const FraudDetectionPage = () => {
                     name="AGE"
                     type="number"
                     placeholder="e.g. 35"
-                    value={claim.AGE || ''}
+                    value={claimData.AGE || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -280,7 +246,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="MARITAL_STATUS" className="text-gray-300">Marital Status</Label>
                   <Select 
-                    value={claim.MARITAL_STATUS} 
+                    value={claimData.MARITAL_STATUS} 
                     onValueChange={(value) => handleSelectChange('MARITAL_STATUS', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -298,7 +264,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="EMPLOYMENT_STATUS" className="text-gray-300">Employment Status</Label>
                   <Select 
-                    value={claim.EMPLOYMENT_STATUS} 
+                    value={claimData.EMPLOYMENT_STATUS} 
                     onValueChange={(value) => handleSelectChange('EMPLOYMENT_STATUS', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -317,7 +283,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="CUSTOMER_EDUCATION_LEVEL" className="text-gray-300">Education Level</Label>
                   <Select 
-                    value={claim.CUSTOMER_EDUCATION_LEVEL} 
+                    value={claimData.CUSTOMER_EDUCATION_LEVEL} 
                     onValueChange={(value) => handleSelectChange('CUSTOMER_EDUCATION_LEVEL', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -336,7 +302,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="SOCIAL_CLASS" className="text-gray-300">Social Class</Label>
                   <Select 
-                    value={claim.SOCIAL_CLASS} 
+                    value={claimData.SOCIAL_CLASS} 
                     onValueChange={(value) => handleSelectChange('SOCIAL_CLASS', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -354,7 +320,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="HOUSE_TYPE" className="text-gray-300">House Type</Label>
                   <Select 
-                    value={claim.HOUSE_TYPE} 
+                    value={claimData.HOUSE_TYPE} 
                     onValueChange={(value) => handleSelectChange('HOUSE_TYPE', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -376,7 +342,7 @@ const FraudDetectionPage = () => {
                     name="NO_OF_FAMILY_MEMBERS"
                     type="number"
                     placeholder="e.g. 4"
-                    value={claim.NO_OF_FAMILY_MEMBERS || ''}
+                    value={claimData.NO_OF_FAMILY_MEMBERS || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -395,7 +361,7 @@ const FraudDetectionPage = () => {
                     name="CLAIM_AMOUNT"
                     type="number"
                     placeholder="e.g. 5000"
-                    value={claim.CLAIM_AMOUNT || ''}
+                    value={claimData.CLAIM_AMOUNT || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -408,7 +374,7 @@ const FraudDetectionPage = () => {
                     id="claimDate"
                     name="claimDate"
                     type="date"
-                    value={claim.claimDate}
+                    value={claimDetails.claimDate}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -422,7 +388,7 @@ const FraudDetectionPage = () => {
                     name="days_to_loss"
                     type="number"
                     placeholder="e.g. 30"
-                    value={claim.days_to_loss || ''}
+                    value={claimData.days_to_loss || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -437,17 +403,19 @@ const FraudDetectionPage = () => {
                     type="number"
                     step="0.01"
                     placeholder="e.g. 1.5"
-                    value={claim.claim_premium_ratio || ''}
+                    value={claimData.claim_premium_ratio || ''}
                     onChange={handleInputChange}
-                    required
                     className="bg-gray-800 border-gray-700 text-white"
                   />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Optional: Auto-calculated if left empty
+                  </p>
                 </div>
 
                 <div>
                   <Label htmlFor="CLAIM_STATUS" className="text-gray-300">Claim Status</Label>
                   <Select 
-                    value={claim.CLAIM_STATUS} 
+                    value={claimData.CLAIM_STATUS} 
                     onValueChange={(value) => handleSelectChange('CLAIM_STATUS', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -465,7 +433,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="submissionMethod" className="text-gray-300">Submission Method</Label>
                   <Select 
-                    value={claim.submissionMethod} 
+                    value={claimDetails.submissionMethod} 
                     onValueChange={(value: 'online' | 'phone' | 'agent' | 'email') => handleSelectChange('submissionMethod', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -488,7 +456,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="INCIDENT_SEVERITY" className="text-gray-300">Incident Severity</Label>
                   <Select 
-                    value={claim.INCIDENT_SEVERITY} 
+                    value={claimData.INCIDENT_SEVERITY} 
                     onValueChange={(value) => handleSelectChange('INCIDENT_SEVERITY', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -512,7 +480,7 @@ const FraudDetectionPage = () => {
                     min="0"
                     max="23"
                     placeholder="e.g. 14"
-                    value={claim.INCIDENT_HOUR_OF_THE_DAY || ''}
+                    value={claimData.INCIDENT_HOUR_OF_THE_DAY || ''}
                     onChange={handleInputChange}
                     required
                     className="bg-gray-800 border-gray-700 text-white"
@@ -522,7 +490,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="ANY_INJURY" className="text-gray-300">Any Injury (0 = No, 1 = Yes)</Label>
                   <RadioGroup 
-                    value={claim.ANY_INJURY.toString()} 
+                    value={claimData.ANY_INJURY.toString()} 
                     onValueChange={(value) => handleSelectChange('ANY_INJURY', value)}
                     className="flex space-x-4 mt-2"
                   >
@@ -540,7 +508,7 @@ const FraudDetectionPage = () => {
                 <div>
                   <Label htmlFor="RISK_SEGMENTATION" className="text-gray-300">Risk Segmentation</Label>
                   <Select 
-                    value={claim.RISK_SEGMENTATION} 
+                    value={claimData.RISK_SEGMENTATION} 
                     onValueChange={(value) => handleSelectChange('RISK_SEGMENTATION', value)}
                   >
                     <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
@@ -561,7 +529,7 @@ const FraudDetectionPage = () => {
                     name="claimDescription"
                     rows={3}
                     placeholder="Describe the claim details..."
-                    value={claim.claimDescription}
+                    value={claimDetails.claimDescription}
                     onChange={handleInputChange}
                     required
                     className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-white"
