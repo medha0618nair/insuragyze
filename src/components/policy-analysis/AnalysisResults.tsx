@@ -17,18 +17,18 @@ interface AnalysisResultsProps {
 const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) => {
   const { toast } = useToast();
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    simplified: true, // Set simplified section to expanded by default
+    simplified: true,
     coverage: true,
-    exclusions: true, // Set exclusions to expanded by default
-    benefits: true, // Set benefits to expanded by default
+    exclusions: true,
+    benefits: true,
     loopholes: true,
     deductibles: false,
     recommendations: true,
     rawData: false,
-    detailedAnalysis: true, // New section for detailed analysis
-    policyDetails: true, // New section for policy details
-    premiumInfo: false, // New section for premium info
-    claimsProcess: false // New section for claims process
+    detailedAnalysis: true,
+    policyDetails: true,
+    premiumInfo: false,
+    claimsProcess: false
   });
 
   const toggleSection = (section: string) => {
@@ -45,27 +45,21 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     });
   };
 
-  // Format currency to INR
   const formatINR = (amount: number): string => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
-  // Extract simplified summary from raw API response if available
   const simplifiedSummary = result.simplifiedSummary || 
     (result.rawApiResponse && (result.rawApiResponse as any).simplified_summary) ||
     "Your policy has been analyzed and the key points have been extracted. Please review the coverage highlights, benefits, exclusions, and recommendations below.";
 
-  // Get filename from raw response
   const policyFilename = result.rawApiResponse && (result.rawApiResponse as any).filename 
     ? (result.rawApiResponse as any).filename 
     : "Uploaded Document";
 
-  // Get all benefits from API response
   const getAllBenefits = () => {
-    // Start with the main benefits array
     let allBenefits = [...(result.benefits || [])];
     
-    // Add benefits from detailed analysis if available
     if (result.analysis?.benefits) {
       if (result.analysis.benefits["Medical Benefits"]) {
         allBenefits = [...allBenefits, ...result.analysis.benefits["Medical Benefits"]];
@@ -78,21 +72,16 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
       }
     }
     
-    // Deduplicate the benefits
     return [...new Set(allBenefits)];
   };
-  
-  // Get all exclusions from API response
+
   const getAllExclusions = () => {
-    // Start with the main exclusions array
     let allExclusions = [...(result.exclusions || [])];
     
-    // Add exclusions from detailed analysis if available
     if (result.analysis?.major_exclusions) {
       allExclusions = [...allExclusions, ...result.analysis.major_exclusions];
     }
     
-    // Deduplicate the exclusions
     return [...new Set(allExclusions)];
   };
 
@@ -106,7 +95,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
         </AlertDescription>
       </Alert>
       
-      {/* Policy Details Card */}
       <Card className="bg-black/50 border border-gray-800 shadow-lg overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-insura-neon/30 to-insura-purple/30 border-b border-gray-800">
           <div className="flex items-center justify-between">
@@ -123,7 +111,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
         </CardHeader>
         
         <CardContent className="p-6 space-y-6">
-          {/* Simplified Summary Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -145,7 +132,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                     {simplifiedSummary}
                   </div>
                   
-                  {/* Additional Information if available */}
                   {result.additionalInformation && result.additionalInformation.length > 0 && (
                     <div className="mt-4 space-y-2">
                       <h4 className="text-sm font-semibold text-white">Additional Information</h4>
@@ -161,7 +147,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
 
-          {/* Policy Details Section - New! */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -214,7 +199,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
 
-          {/* Premium Information Section - New! */}
           {result.premiumInfo && (result.premiumInfo.amount || result.premiumInfo.frequency) && (
             <div className="space-y-4">
               <div 
@@ -267,7 +251,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             </div>
           )}
 
-          {/* Claims Process Section - New! */}
           {result.claimsProcess && (
             <div className="space-y-4">
               <div 
@@ -327,7 +310,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             </div>
           )}
 
-          {/* Detailed Analysis Section */}
           {result.analysis && (
             <div className="space-y-4">
               <div 
@@ -346,15 +328,14 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               {expandedSections.detailedAnalysis && (
                 <Card className="bg-black/30 border border-insura-purple/30">
                   <CardContent className="p-4 space-y-4">
-                    {/* Coverage Highlights */}
-                    {result.analysis.coverage_highlights && result.analysis.coverage_highlights.length > 0 && (
+                    {getAllBenefits().length > 0 && (
                       <div className="space-y-3">
-                        <h4 className="text-md font-semibold text-insura-neon">Coverage Highlights</h4>
+                        <h4 className="text-md font-semibold text-insura-neon">Key Benefits</h4>
                         <ul className="space-y-2">
-                          {result.analysis.coverage_highlights.map((highlight, index) => (
+                          {getAllBenefits().map((benefit, index) => (
                             <li key={index} className="flex items-start">
                               <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
-                              <span className="text-gray-300 text-sm">{highlight}</span>
+                              <span className="text-gray-300 text-sm">{benefit}</span>
                             </li>
                           ))}
                         </ul>
@@ -362,10 +343,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                       </div>
                     )}
                     
-                    {/* Benefits Sections */}
                     {result.analysis.benefits && (
                       <div className="space-y-3">
-                        <h4 className="text-md font-semibold text-insura-neon">Key Benefits</h4>
+                        <h4 className="text-md font-semibold text-insura-neon">Benefits by Category</h4>
                         
                         {result.analysis.benefits["Medical Benefits"] && result.analysis.benefits["Medical Benefits"].length > 0 && (
                           <div className="space-y-2">
@@ -413,7 +393,21 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                       </div>
                     )}
                     
-                    {/* Loopholes Section */}
+                    {result.analysis.major_exclusions && result.analysis.major_exclusions.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-md font-semibold text-insura-neon">Major Exclusions</h4>
+                        <ul className="space-y-2">
+                          {result.analysis.major_exclusions.map((exclusion, index) => (
+                            <li key={index} className="flex items-start">
+                              <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
+                              <span className="text-gray-300 text-sm">{exclusion}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <Separator className="border-gray-800" />
+                      </div>
+                    )}
+                    
                     {result.analysis.loopholes && (
                       <div className="space-y-3">
                         <h4 className="text-md font-semibold text-insura-neon">Potential Loopholes</h4>
@@ -481,7 +475,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             </div>
           )}
           
-          {/* Coverage Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -547,7 +540,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Benefits Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -578,7 +570,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Exclusions Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -609,7 +600,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Loopholes Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -640,7 +630,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Deductibles Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -687,7 +676,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
             )}
           </div>
           
-          {/* Raw API Response Section */}
           <div className="space-y-4">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -715,7 +703,6 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
         </CardContent>
       </Card>
       
-      {/* Recommendations Card */}
       <div className="space-y-4">
         <div 
           className="flex items-center justify-between cursor-pointer" 
