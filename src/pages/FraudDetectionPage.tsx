@@ -51,9 +51,11 @@ const FraudDetectionPage = () => {
 
     try {
       // Convert claim amount to number
+      const claimAmountNumber = parseFloat(claim.claimAmount);
+      
       const claimData = {
         ...claim,
-        claimAmount: parseFloat(claim.claimAmount),
+        claimAmount: claimAmountNumber,
       };
 
       // In a real app, this would call the API
@@ -66,7 +68,7 @@ const FraudDetectionPage = () => {
             policyNumber: claim.policyNumber,
             fraudProbability: Math.random() * 100,
             riskFactors: [
-              claim.claimAmount > 5000 ? 'Unusually high claim amount' : 'Claim amount within normal range',
+              claimAmountNumber > 5000 ? 'Unusually high claim amount' : 'Claim amount within normal range',
               'Recent policy changes',
               'Multiple claims history'
             ],
