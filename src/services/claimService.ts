@@ -1,4 +1,3 @@
-
 import { FRAUD_DETECTION_API } from './apiConfig';
 
 export interface ClaimData {
@@ -59,11 +58,7 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
 
     console.log("Sending data to fraud detection API:", validatedData);
 
-    // Directly use the fallback result and don't attempt the API call for now
-    // since we're seeing consistent failures with the API
-    return createFallbackResult(policyNumber, validatedData);
-
-    /* Commented out API call attempt since it's consistently failing
+    // Try the API call, but fall back to the mock data if it fails
     try {
       // Make the API call to the endpoint
       const response = await fetch(`${FRAUD_DETECTION_API}/predict`, {
@@ -116,7 +111,6 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
       console.error('Fetch error:', fetchError);
       return createFallbackResult(policyNumber, validatedData);
     }
-    */
   } catch (error) {
     console.error('Fraud Detection API Error:', error);
     return createFallbackResult(policyNumber);
