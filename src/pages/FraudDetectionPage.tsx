@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
@@ -7,6 +6,7 @@ import Footer from '@/components/Footer';
 import { checkClaimProbability, ClaimData, FraudCheckResult } from '@/services/claimService';
 import FraudDetectionForm from '@/components/fraud-detection/FraudDetectionForm';
 import AnalysisResults from '@/components/fraud-detection/AnalysisResults';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export interface ClaimDetails {
   policyNumber: string;
@@ -18,6 +18,7 @@ export interface ClaimDetails {
 const FraudDetectionPage = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [claimData, setClaimData] = useState<ClaimData>({
     INSURANCE_TYPE: '',
     MARITAL_STATUS: '',
@@ -49,19 +50,14 @@ const FraudDetectionPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Handle ClaimData fields
     if (name in claimData) {
-      // Keep numeric fields as strings in the state until form submission
       setClaimData(prev => ({ ...prev, [name]: value }));
-    }
-    // Handle ClaimDetails fields
-    else {
+    } else {
       setClaimDetails(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    // Check if the name is a property of claimData
     if (name in claimData) {
       setClaimData(prev => ({ ...prev, [name]: value }));
     } else {
@@ -72,27 +68,23 @@ const FraudDetectionPage = () => {
   const handleCheckClaim = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
-      // Convert string values to numbers for API submission
       const numericClaimData = {...claimData};
       
-      // Process all numeric fields
       const numericFields = [
         'PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 
         'NO_OF_FAMILY_MEMBERS', 'days_to_loss', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'
       ];
       
       numericFields.forEach(field => {
-        // Use type assertion to tell TypeScript that we're accessing a key of numericClaimData
         const key = field as keyof ClaimData;
-        // Convert string to number and assign it back - need to handle possible mixed types
         if (typeof numericClaimData[key] === 'string') {
           numericClaimData[key] = parseFloat(numericClaimData[key] as string) || 0;
         }
       });
       
-      // Calculate claim_premium_ratio if not set manually
       if (
         (!numericClaimData.claim_premium_ratio || numericClaimData.claim_premium_ratio === '') && 
         typeof numericClaimData.PREMIUM_AMOUNT === 'number' && numericClaimData.PREMIUM_AMOUNT > 0
@@ -105,17 +97,13 @@ const FraudDetectionPage = () => {
           numericClaimData.PREMIUM_AMOUNT : 
           parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
         
-        // Ensure the ratio is converted to a string to match the ClaimData interface type
         numericClaimData.claim_premium_ratio = (claimAmount / premiumAmount).toString();
       } else if (typeof numericClaimData.claim_premium_ratio === 'number') {
-        // If claim_premium_ratio is already set as a number, convert it to string
         numericClaimData.claim_premium_ratio = numericClaimData.claim_premium_ratio.toString();
       }
 
-      // Call the API service with our data and the policy number
       const result = await checkClaimProbability(numericClaimData, claimDetails.policyNumber);
       
-      // Add result to our list
       setResults(prev => [result, ...prev]);
 
       toast({
@@ -124,10 +112,12 @@ const FraudDetectionPage = () => {
       });
     } catch (error) {
       console.error("Error analyzing claim:", error);
+      setError(error instanceof Error ? error.message : "An unknown error occurred during analysis");
+      
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: "We couldn't analyze this claim. Please try again.",
+        description: error instanceof Error ? error.message : "We couldn't analyze this claim. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -148,8 +138,14 @@ const FraudDetectionPage = () => {
           </p>
         </div>
 
+        {error && (
+          <Alert variant="destructive" className="mb-8">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Claim details form */}
           <FraudDetectionForm 
             claimData={claimData}
             claimDetails={claimDetails}
@@ -159,7 +155,6 @@ const FraudDetectionPage = () => {
             onSubmit={handleCheckClaim}
           />
 
-          {/* Results section */}
           <AnalysisResults results={results} />
         </div>
       </div>
