@@ -9,16 +9,20 @@ import AnalysisResults from '@/components/policy-analysis/AnalysisResults';
 import FeatureDescription from '@/components/policy-analysis/FeatureDescription';
 import PageHeader from '@/components/policy-analysis/PageHeader';
 import { BrainCircuit } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const PolicyAnalysisPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PolicyAnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileUpload = (selectedFile: File) => {
     console.log('File selected:', selectedFile.name, selectedFile.type, selectedFile.size);
     setFile(selectedFile);
+    setError(null); // Clear any previous errors
   };
 
   const handleAnalyzeDocument = async () => {
@@ -32,6 +36,7 @@ const PolicyAnalysisPage = () => {
     }
 
     setIsAnalyzing(true);
+    setError(null);
     
     try {
       const formData = new FormData();
@@ -51,6 +56,7 @@ const PolicyAnalysisPage = () => {
       });
     } catch (error) {
       console.error("Error analyzing document:", error);
+      setError("There was an error analyzing your document. Please try a different file or try again later.");
       toast({
         title: "Analysis Failed",
         description: "There was an error analyzing your document. Please try again.",
@@ -64,6 +70,7 @@ const PolicyAnalysisPage = () => {
   const handleReset = () => {
     setFile(null);
     setAnalysisResult(null);
+    setError(null);
   };
 
   return (
@@ -79,6 +86,14 @@ const PolicyAnalysisPage = () => {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-insura-neon/30 to-insura-purple/30 flex items-center justify-center border border-insura-neon/30 mb-6 shadow-lg shadow-insura-neon/10">
                   <BrainCircuit className="w-12 h-12 text-insura-neon" />
                 </div>
+                
+                {error && (
+                  <Alert variant="destructive" className="mb-6 w-full">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 
                 <DocumentUploader 
                   onUpload={handleFileUpload}

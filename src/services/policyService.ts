@@ -286,61 +286,6 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
     return transformedData;
   } catch (error) {
     console.error('Error in policy analysis:', error);
-    
-    // If there was an error, return mock data for testing
-    console.log('Error occurred, using mock data instead');
-    const mockData = getMockPolicyData();
-    const transformedData = transformApiResponse(mockData);
-    return transformedData;
+    throw error; // Rethrow the error to be handled by the caller
   }
-};
-
-// Function to return mock policy data for testing or when API fails
-const getMockPolicyData = (): ApiResponse => {
-  return {
-    policy_details: {
-      policy_name: "HomeShield Plus Insurance Policy",
-      policy_number: "HS-2023-78945",
-      insurer_name: "Reliable Insurance Co.",
-      insurer_contact: "support@reliableinsurance.com",
-      issue_date: "2023-05-15",
-      expiry_date: "2024-05-14"
-    },
-    coverage_details: {
-      type: "Home Insurance",
-      sum_assured: "₹5 lakh",
-      risks_covered: [
-        "Fire and allied perils",
-        "Natural disasters (earthquake, flood)",
-        "Burglary and theft",
-        "Electrical/mechanical breakdown"
-      ],
-      additional_benefits: [
-        "24/7 emergency assistance",
-        "Temporary accommodation coverage",
-        "Personal accident cover",
-        "Legal liability protection"
-      ]
-    },
-    premium_info: {
-      amount: "₹8,500",
-      frequency: "Annual",
-      due_dates: "May 15",
-      grace_period: "30 days"
-    },
-    exclusions: [
-      "Pre-existing damages before policy start",
-      "Wear and tear or gradual deterioration",
-      "Nuclear hazards and war risks",
-      "Intentional damage by insured",
-      "Commercial or business use of property"
-    ],
-    potential_loopholes: [
-      "Claims must be filed within 7 days of incident",
-      "Valuable items over ₹50,000 require separate listing",
-      "Home vacant for over 30 days may void coverage",
-      "Renovations must be pre-approved by insurer"
-    ],
-    simplified_summary: "This is a comprehensive home insurance policy covering your property against various risks including fire, natural disasters, and theft. It provides ₹5 lakh of coverage with an annual premium of ₹8,500. Key benefits include emergency assistance and temporary accommodation. Be aware that claims must be filed within 7 days and valuable items over ₹50,000 need separate listing."
-  };
 };
