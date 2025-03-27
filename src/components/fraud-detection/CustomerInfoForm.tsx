@@ -29,7 +29,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
           name="AGE"
           type="number"
           placeholder="e.g. 35"
-          value={claimData.AGE || ''}
+          value={claimData.AGE}
           onChange={onInputChange}
           required
           className="bg-gray-800 border-gray-700 text-white"
@@ -135,7 +135,7 @@ const CustomerInfoForm: React.FC<CustomerInfoFormProps> = ({
           name="NO_OF_FAMILY_MEMBERS"
           type="number"
           placeholder="e.g. 4"
-          value={claimData.NO_OF_FAMILY_MEMBERS || ''}
+          value={claimData.NO_OF_FAMILY_MEMBERS}
           onChange={onInputChange}
           required
           className="bg-gray-800 border-gray-700 text-white"

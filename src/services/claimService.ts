@@ -11,15 +11,15 @@ export interface ClaimData {
   CUSTOMER_EDUCATION_LEVEL: string;
   CLAIM_STATUS: string;
   INCIDENT_SEVERITY: string;
-  PREMIUM_AMOUNT: number;
-  CLAIM_AMOUNT: number;
-  AGE: number;
-  TENURE: number;
-  NO_OF_FAMILY_MEMBERS: number;
-  days_to_loss: number;
-  claim_premium_ratio: number;
-  INCIDENT_HOUR_OF_THE_DAY: number;
-  ANY_INJURY: number;
+  PREMIUM_AMOUNT: number | string;
+  CLAIM_AMOUNT: number | string;
+  AGE: number | string;
+  TENURE: number | string;
+  NO_OF_FAMILY_MEMBERS: number | string;
+  days_to_loss: number | string;
+  claim_premium_ratio: number | string;
+  INCIDENT_HOUR_OF_THE_DAY: number | string;
+  ANY_INJURY: number | string;
 }
 
 export interface FraudCheckResult {
@@ -35,26 +35,28 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
   try {
     // Validate and ensure non-negative values for numeric fields
     const validatedData = {
-      age: Math.max(0, claimData.AGE),
+      age: Math.max(0, Number(claimData.AGE)),
       income: 0, // Default value since it's not in our data model
-      claim_amount: Math.max(0, claimData.CLAIM_AMOUNT),
+      claim_amount: Math.max(0, Number(claimData.CLAIM_AMOUNT)),
       policy_number: policyNumber,
-      insurance_type: claimData.INSURANCE_TYPE.toLowerCase(),
-      marital_status: claimData.MARITAL_STATUS.toLowerCase(),
-      employment_status: claimData.EMPLOYMENT_STATUS.toLowerCase(),
-      risk_segmentation: claimData.RISK_SEGMENTATION.toLowerCase(),
-      house_type: claimData.HOUSE_TYPE.toLowerCase(),
-      social_class: claimData.SOCIAL_CLASS.toLowerCase(),
-      customer_education_level: claimData.CUSTOMER_EDUCATION_LEVEL.toLowerCase(),
-      claim_status: claimData.CLAIM_STATUS.toLowerCase(),
-      incident_severity: claimData.INCIDENT_SEVERITY.toLowerCase(),
-      premium_amount: Math.max(0, claimData.PREMIUM_AMOUNT),
-      tenure: Math.max(0, claimData.TENURE), // Ensure non-negative
-      no_of_family_members: Math.max(0, claimData.NO_OF_FAMILY_MEMBERS), // Ensure non-negative
-      days_to_loss: Math.max(0, claimData.days_to_loss), // Ensure non-negative
-      claim_premium_ratio: claimData.claim_premium_ratio > 0 ? claimData.claim_premium_ratio : claimData.CLAIM_AMOUNT / Math.max(1, claimData.PREMIUM_AMOUNT),
-      incident_hour_of_the_day: Math.min(23, Math.max(0, claimData.INCIDENT_HOUR_OF_THE_DAY)), // Ensure between 0-23
-      any_injury: claimData.ANY_INJURY === 1 ? 1 : 0
+      insurance_type: String(claimData.INSURANCE_TYPE).toLowerCase(),
+      marital_status: String(claimData.MARITAL_STATUS).toLowerCase(),
+      employment_status: String(claimData.EMPLOYMENT_STATUS).toLowerCase(),
+      risk_segmentation: String(claimData.RISK_SEGMENTATION).toLowerCase(),
+      house_type: String(claimData.HOUSE_TYPE).toLowerCase(),
+      social_class: String(claimData.SOCIAL_CLASS).toLowerCase(),
+      customer_education_level: String(claimData.CUSTOMER_EDUCATION_LEVEL).toLowerCase(),
+      claim_status: String(claimData.CLAIM_STATUS).toLowerCase(),
+      incident_severity: String(claimData.INCIDENT_SEVERITY).toLowerCase(),
+      premium_amount: Math.max(0, Number(claimData.PREMIUM_AMOUNT)),
+      tenure: Math.max(0, Number(claimData.TENURE)), // Ensure non-negative
+      no_of_family_members: Math.max(0, Number(claimData.NO_OF_FAMILY_MEMBERS)), // Ensure non-negative
+      days_to_loss: Math.max(0, Number(claimData.days_to_loss)), // Ensure non-negative
+      claim_premium_ratio: Number(claimData.claim_premium_ratio) > 0 ? 
+        Number(claimData.claim_premium_ratio) : 
+        Math.max(0, Number(claimData.CLAIM_AMOUNT)) / Math.max(1, Number(claimData.PREMIUM_AMOUNT)),
+      incident_hour_of_the_day: Math.min(23, Math.max(0, Number(claimData.INCIDENT_HOUR_OF_THE_DAY))), // Ensure between 0-23
+      any_injury: Number(claimData.ANY_INJURY) === 1 ? 1 : 0
     };
 
     console.log("Sending data to fraud detection API:", validatedData);

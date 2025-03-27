@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
@@ -51,13 +50,8 @@ const FraudDetectionPage = () => {
     
     // Handle ClaimData fields
     if (name in claimData) {
-      // Convert numeric fields to numbers
-      if (['PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 'NO_OF_FAMILY_MEMBERS', 
-           'days_to_loss', 'claim_premium_ratio', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'].includes(name)) {
-        setClaimData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
-      } else {
-        setClaimData(prev => ({ ...prev, [name]: value }));
-      }
+      // Keep numeric fields as strings in the state until form submission
+      setClaimData(prev => ({ ...prev, [name]: value }));
     }
     // Handle ClaimDetails fields
     else {
@@ -79,13 +73,26 @@ const FraudDetectionPage = () => {
     setIsLoading(true);
 
     try {
+      // Convert string values to numbers for API submission
+      const numericClaimData = {...claimData};
+      
+      // Process all numeric fields
+      const numericFields = [
+        'PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 
+        'NO_OF_FAMILY_MEMBERS', 'days_to_loss', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'
+      ];
+      
+      numericFields.forEach(field => {
+        numericClaimData[field as keyof ClaimData] = parseFloat(claimData[field as keyof ClaimData] as string) || 0;
+      });
+      
       // Calculate claim_premium_ratio if not set manually
-      if (claimData.claim_premium_ratio === 0 && claimData.PREMIUM_AMOUNT > 0) {
-        claimData.claim_premium_ratio = claimData.CLAIM_AMOUNT / claimData.PREMIUM_AMOUNT;
+      if (!numericClaimData.claim_premium_ratio && numericClaimData.PREMIUM_AMOUNT > 0) {
+        numericClaimData.claim_premium_ratio = numericClaimData.CLAIM_AMOUNT / numericClaimData.PREMIUM_AMOUNT;
       }
 
       // Call the API service with our data and the policy number
-      const result = await checkClaimProbability(claimData, claimDetails.policyNumber);
+      const result = await checkClaimProbability(numericClaimData, claimDetails.policyNumber);
       
       // Add result to our list
       setResults(prev => [result, ...prev]);
