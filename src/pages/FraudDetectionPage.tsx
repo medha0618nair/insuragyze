@@ -105,7 +105,8 @@ const FraudDetectionPage = () => {
           numericClaimData.PREMIUM_AMOUNT : 
           parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
         
-        numericClaimData.claim_premium_ratio = claimAmount / premiumAmount;
+        // Convert the calculated ratio to string to match the expected type in ClaimData
+        numericClaimData.claim_premium_ratio = (claimAmount / premiumAmount).toString();
       }
 
       // Call the API service with our data and the policy number
