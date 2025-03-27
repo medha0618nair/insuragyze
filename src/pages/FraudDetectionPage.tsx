@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
@@ -85,26 +84,19 @@ const FraudDetectionPage = () => {
       numericFields.forEach(field => {
         const key = field as keyof ClaimData;
         if (typeof numericClaimData[key] === 'string') {
-          numericClaimData[key] = parseFloat(numericClaimData[key] as string) || 0;
+          const value = parseFloat(numericClaimData[key] as string) || 0;
+          numericClaimData[key] = value.toString();
         }
       });
       
       if (
         (!numericClaimData.claim_premium_ratio || numericClaimData.claim_premium_ratio === '') && 
-        typeof numericClaimData.PREMIUM_AMOUNT === 'number' && numericClaimData.PREMIUM_AMOUNT > 0
+        numericClaimData.PREMIUM_AMOUNT && parseFloat(numericClaimData.PREMIUM_AMOUNT as string) > 0
       ) {
-        const claimAmount = typeof numericClaimData.CLAIM_AMOUNT === 'number' ? 
-          numericClaimData.CLAIM_AMOUNT : 
-          parseFloat(numericClaimData.CLAIM_AMOUNT as string) || 0;
-        
-        const premiumAmount = typeof numericClaimData.PREMIUM_AMOUNT === 'number' ? 
-          numericClaimData.PREMIUM_AMOUNT : 
-          parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
+        const claimAmount = parseFloat(numericClaimData.CLAIM_AMOUNT as string) || 0;
+        const premiumAmount = parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
         
         numericClaimData.claim_premium_ratio = (claimAmount / premiumAmount).toString();
-      } else if (typeof numericClaimData.claim_premium_ratio === 'number') {
-        // Ensure the ratio is always a string when needed
-        numericClaimData.claim_premium_ratio = numericClaimData.claim_premium_ratio.toString();
       }
 
       const result = await checkClaimProbability(numericClaimData, claimDetails.policyNumber);
