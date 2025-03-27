@@ -25,16 +25,16 @@ const ResultsHeader: React.FC<ResultsHeaderProps> = ({
         </div>
         <div className="flex space-x-4">
           <ButtonCustom
-            variant="outline"
+            variant="cyber-outline"
             size="sm"
-            className="flex items-center gap-1 text-insura-neon border-insura-neon"
+            className="flex items-center gap-1"
             onClick={toggleCurrency}
           >
             <RefreshCw className="h-4 w-4" />
             {currency === 'USD' ? 'Show INR' : 'Show USD'}
           </ButtonCustom>
           <ButtonCustom
-            variant="outline"
+            variant="cyber-outline"
             size="sm"
             onClick={() => {
               setShowResults(false);

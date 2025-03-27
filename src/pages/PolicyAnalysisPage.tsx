@@ -83,8 +83,11 @@ const PolicyAnalysisPage = () => {
           {!analysisResult ? (
             <div className="cyber-card rounded-xl p-8 max-w-3xl mx-auto">
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-insura-neon/30 to-insura-purple/30 flex items-center justify-center border border-insura-neon/30 mb-6 shadow-lg shadow-insura-neon/10">
-                  <BrainCircuit className="w-12 h-12 text-insura-neon" />
+                <div className="relative w-24 h-24 mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-insura-neon to-insura-purple opacity-20 rounded-full blur-xl animate-pulse-slow"></div>
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-black to-gray-900 flex items-center justify-center border border-insura-neon/30 shadow-lg shadow-insura-neon/10 z-10">
+                    <BrainCircuit className="w-12 h-12 text-insura-neon" />
+                  </div>
                 </div>
                 
                 {error && (

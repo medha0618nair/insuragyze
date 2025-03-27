@@ -7,7 +7,7 @@ body {
 
 /* Glass effects */
 .glass-card {
-  @apply bg-black/40 backdrop-blur-md border border-gray-800 shadow-lg;
+  @apply bg-black/40 backdrop-blur-md border border-gray-800 shadow-lg rounded-xl;
 }
 
 .neo-blur {
@@ -33,4 +33,35 @@ body {
 
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Enhanced Buttons */
+.btn-glow {
+  @apply relative overflow-hidden after:absolute after:inset-0 after:bg-gradient-to-r after:from-insura-neon/0 after:via-insura-neon/20 after:to-insura-purple/0 after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-insura-neon to-insura-purple text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg hover:shadow-insura-purple/20 transition-all duration-300 transform hover:-translate-y-1;
+}
+
+.btn-secondary {
+  @apply bg-transparent border border-insura-neon text-insura-neon font-medium px-6 py-3 rounded-lg shadow-sm hover:shadow-md hover:shadow-insura-neon/10 hover:bg-insura-neon/5 transition-all duration-300 transform hover:-translate-y-1;
+}
+
+/* Card Styles */
+.card-highlight {
+  @apply relative overflow-hidden bg-gradient-to-br from-gray-900 to-black border border-gray-800 hover:border-insura-neon/30 rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-insura-neon/5;
+}
+
+.card-premium {
+  @apply relative overflow-hidden bg-gradient-to-br from-black to-gray-900 border border-insura-purple/30 rounded-xl shadow-lg shadow-insura-purple/5 hover:shadow-xl hover:shadow-insura-purple/10 transition-all duration-300;
+}
+
+/* Text Effects */
+.text-gradient-blue {
+  @apply bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent;
+}
+
+.text-gradient-purple {
+  @apply bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent;
 }

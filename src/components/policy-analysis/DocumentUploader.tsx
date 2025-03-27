@@ -84,114 +84,118 @@ const DocumentUploader: React.FC<DocumentUploaderProps> = ({
   };
 
   return (
-    <div>
-      <div 
-        className={`w-full border-2 border-dashed rounded-lg p-8 mb-6 text-center transition-all duration-300 cursor-pointer ${
-          isDragging 
-            ? 'border-insura-neon bg-insura-neon/5' 
-            : file 
-              ? 'border-green-500 bg-green-900/10' 
-              : 'border-gray-700 hover:border-insura-neon/50'
-        }`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={!file ? handleSelectFileClick : undefined}
-      >
-        <div className="mb-6 flex justify-center">
-          {getFileIcon()}
+    <div className="animated-border p-[1px]">
+      <div className="bg-black/80 rounded-xl p-8">
+        <div 
+          className={`w-full border-2 border-dashed rounded-lg p-8 mb-6 text-center transition-all duration-300 cursor-pointer ${
+            isDragging 
+              ? 'border-insura-neon bg-insura-neon/5' 
+              : file 
+                ? 'border-green-500 bg-green-900/10' 
+                : 'border-gray-700 hover:border-insura-neon/50'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={!file ? handleSelectFileClick : undefined}
+        >
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              {getFileIcon()}
+              <div className="absolute -inset-4 bg-insura-neon/10 rounded-full blur-lg opacity-70"></div>
+            </div>
+          </div>
+          
+          <h3 className="text-xl font-medium text-white mb-2">
+            {file 
+              ? `Selected file: ${file.name}` 
+              : 'Upload Your Policy Document'}
+          </h3>
+          
+          <p className="text-gray-400 mb-6">
+            {file 
+              ? `Type: ${file.type || 'Unknown'} · Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB` 
+              : 'PDF, DOCX or TXT file (Max 10MB)'}
+          </p>
+          
+          {!file ? (
+            <label htmlFor="file-upload">
+              <ButtonCustom 
+                variant="cyber"
+                size="md"
+                glow={true}
+              >
+                Select File
+              </ButtonCustom>
+            </label>
+          ) : (
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <ButtonCustom 
+                variant="cyber"
+                size="md"
+                glow={true}
+                onClick={onAnalyze}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Analyzing...
+                  </>
+                ) : (
+                  'Analyze Document'
+                )}
+              </ButtonCustom>
+              
+              <ButtonCustom 
+                variant="cyber-outline"
+                size="md"
+                onClick={onReset}
+              >
+                Choose Different File
+              </ButtonCustom>
+            </div>
+          )}
+          
+          <input 
+            ref={fileInputRef}
+            id="file-upload" 
+            type="file" 
+            className="hidden" 
+            onChange={handleFileChange}
+            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+          />
         </div>
-        
-        <h3 className="text-xl font-medium text-white mb-2">
-          {file 
-            ? `Selected file: ${file.name}` 
-            : 'Upload Your Policy Document'}
-        </h3>
-        
-        <p className="text-gray-400 mb-6">
-          {file 
-            ? `Type: ${file.type || 'Unknown'} · Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB` 
-            : 'PDF, DOCX or TXT file (Max 10MB)'}
-        </p>
-        
-        {!file ? (
-          <label htmlFor="file-upload">
-            <ButtonCustom 
-              variant="primary" 
-              size="md"
-              className="bg-gradient-to-r from-insura-neon to-insura-purple"
-            >
-              Select File
-            </ButtonCustom>
-          </label>
-        ) : (
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <ButtonCustom 
-              variant="primary" 
-              size="md"
-              className="bg-gradient-to-r from-insura-neon to-insura-purple"
-              onClick={onAnalyze}
-              disabled={isAnalyzing}
-            >
-              {isAnalyzing ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Analyzing...
-                </>
-              ) : (
-                'Analyze Document'
-              )}
-            </ButtonCustom>
-            
-            <ButtonCustom 
-              variant="outline" 
-              size="md"
-              className="border-gray-600 text-gray-300 hover:bg-gray-800"
-              onClick={onReset}
-            >
-              Choose Different File
-            </ButtonCustom>
-          </div>
-        )}
-        
-        <input 
-          ref={fileInputRef}
-          id="file-upload" 
-          type="file" 
-          className="hidden" 
-          onChange={handleFileChange}
-          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-        />
-      </div>
 
-      <div className="text-center mt-12">
-        <h3 className="text-xl font-medium text-white mb-4">How It Works</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 bg-black/40 rounded-lg border border-gray-800">
-            <div className="w-12 h-12 rounded-full bg-insura-neon/20 flex items-center justify-center mx-auto mb-3">
-              <Upload className="w-6 h-6 text-insura-neon" />
+        <div className="text-center mt-12">
+          <h3 className="text-xl font-medium text-white mb-4">How It Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="feature-card p-4 border border-gray-800 rounded-lg">
+              <div className="w-12 h-12 rounded-full bg-insura-neon/20 flex items-center justify-center mx-auto mb-3">
+                <Upload className="w-6 h-6 text-insura-neon" />
+              </div>
+              <h4 className="font-medium text-white mb-2">1. Upload Document</h4>
+              <p className="text-gray-400 text-sm">Upload your insurance policy document in any common format</p>
             </div>
-            <h4 className="font-medium text-white mb-2">1. Upload Document</h4>
-            <p className="text-gray-400 text-sm">Upload your insurance policy document in any common format</p>
-          </div>
-          
-          <div className="p-4 bg-black/40 rounded-lg border border-gray-800">
-            <div className="w-12 h-12 rounded-full bg-insura-purple/20 flex items-center justify-center mx-auto mb-3">
-              <FileText className="w-6 h-6 text-insura-purple" />
+            
+            <div className="feature-card p-4 border border-gray-800 rounded-lg animate-float">
+              <div className="w-12 h-12 rounded-full bg-insura-purple/20 flex items-center justify-center mx-auto mb-3">
+                <FileText className="w-6 h-6 text-insura-purple" />
+              </div>
+              <h4 className="font-medium text-white mb-2">2. AI Processing</h4>
+              <p className="text-gray-400 text-sm">Our AI scans and analyzes your policy language and terms</p>
             </div>
-            <h4 className="font-medium text-white mb-2">2. AI Processing</h4>
-            <p className="text-gray-400 text-sm">Our AI scans and analyzes your policy language and terms</p>
-          </div>
-          
-          <div className="p-4 bg-black/40 rounded-lg border border-gray-800">
-            <div className="w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-3">
-              <FileText className="w-6 h-6 text-teal-500" />
+            
+            <div className="feature-card p-4 border border-gray-800 rounded-lg">
+              <div className="w-12 h-12 rounded-full bg-teal-500/20 flex items-center justify-center mx-auto mb-3">
+                <FileText className="w-6 h-6 text-teal-500" />
+              </div>
+              <h4 className="font-medium text-white mb-2">3. Get Insights</h4>
+              <p className="text-gray-400 text-sm">Receive a simplified breakdown of your policy in plain language</p>
             </div>
-            <h4 className="font-medium text-white mb-2">3. Get Insights</h4>
-            <p className="text-gray-400 text-sm">Receive a simplified breakdown of your policy in plain language</p>
           </div>
         </div>
       </div>

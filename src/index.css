@@ -61,7 +61,7 @@
   }
 
   .glass-card {
-    @apply bg-black/40 backdrop-blur-md border border-gray-800 shadow-lg;
+    @apply bg-black/40 backdrop-blur-md border border-gray-800 shadow-lg rounded-xl;
   }
   
   .neo-blur {
@@ -73,7 +73,7 @@
   }
   
   .cyber-card {
-    @apply bg-gradient-to-br from-black to-gray-900/90 backdrop-blur-lg border border-insura-neon/20 shadow-lg shadow-insura-neon/10;
+    @apply bg-gradient-to-br from-black to-gray-900/90 backdrop-blur-lg border border-insura-neon/20 shadow-lg shadow-insura-neon/10 rounded-xl;
   }
 
   .cyber-button {
@@ -103,4 +103,83 @@
   .gradient-bg {
     @apply bg-gradient-to-br from-gray-900 via-black to-gray-900 bg-size-200 animate-gradient-shift;
   }
+  
+  /* New Enhanced UI Classes */
+  .hero-card {
+    @apply bg-gradient-to-br from-black/80 to-gray-900/70 backdrop-blur-xl border border-insura-neon/30 shadow-xl shadow-insura-neon/5 rounded-2xl p-8;
+  }
+  
+  .feature-card {
+    @apply bg-gradient-to-br from-gray-900 to-black backdrop-blur-lg border border-gray-800 hover:border-insura-neon/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-insura-neon/5 rounded-xl p-6;
+  }
+  
+  .glow-effect {
+    @apply relative after:absolute after:inset-0 after:bg-gradient-to-r after:from-insura-neon/0 after:via-insura-neon/10 after:to-insura-purple/0 after:rounded-lg after:blur-xl after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-500;
+  }
+  
+  .animated-border {
+    @apply relative rounded-xl overflow-hidden before:absolute before:inset-0 before:p-[1px] before:bg-gradient-to-r before:from-insura-neon before:via-insura-purple before:to-insura-neon before:bg-size-200 before:animate-gradient-shift before:rounded-xl;
+  }
+}
+
+@layer utilities {
+  .bg-size-200 {
+    background-size: 200% 200%;
+  }
+  
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .text-shadow-md {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .text-shadow-lg {
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Animation classes */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.animate-glitch {
+  animation: glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 8s ease infinite;
 }
