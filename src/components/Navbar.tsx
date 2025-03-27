@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X, LogOut, User } from 'lucide-react';
@@ -102,15 +103,15 @@ const Navbar = () => {
               >
                 Chat Assistant
               </button>
+              <Link to="/tools/fraud-detection" className="text-gray-300 hover:text-insura-neon transition-colors">
+                Fraud Detection
+              </Link>
               <NavigationMenu className="ml-2">
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger className="text-gray-300 hover:text-insura-neon bg-transparent h-auto p-0">AI Tools</NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <div className="w-[230px] p-2">
-                        <Link to="/tools/fraud-detection" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
-                          Fraud Detection
-                        </Link>
                         <Link to="/tools/claim-checker" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
                           Claim Checker
                         </Link>
@@ -202,11 +203,11 @@ const Navbar = () => {
           >
             Chat Assistant
           </button>
+          <Link to="/tools/fraud-detection" className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors">
+            Fraud Detection
+          </Link>
           <div className="px-3 py-2">
             <p className="text-gray-300 mb-2">AI Tools</p>
-            <Link to="/tools/fraud-detection" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
-              Fraud Detection
-            </Link>
             <Link to="/tools/claim-checker" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
               Claim Checker
             </Link>
