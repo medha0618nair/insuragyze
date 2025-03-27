@@ -15,6 +15,7 @@ import PremiumCalculatorPage from "./pages/PremiumCalculatorPage";
 import CoverageOptimizerPage from "./pages/CoverageOptimizerPage";
 import ChatAssistantPage from "./pages/ChatAssistantPage";
 import ClaimCheckerPage from "./pages/ClaimCheckerPage";
+import FraudDetectionPage from "./pages/FraudDetectionPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import InsuranceRecommender from "./components/InsuranceRecommender";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
             <Route path="/chat-assistant" element={<ChatAssistantPage />} />
             <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
+            <Route path="/tools/fraud-detection" element={<FraudDetectionPage />} />
             <Route path="/verify-otp" element={<VerifyOTP />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
