@@ -1,4 +1,3 @@
-
 import { DOC_ANALYSIS_API } from './apiConfig';
 
 export interface PolicyAnalysisResult {
@@ -195,18 +194,24 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
     benefits = apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'];
   } else if (apiResponse.coverage_details?.additional_benefits) {
     benefits = apiResponse.coverage_details.additional_benefits;
-  } else if (apiResponse.analysis?.benefits?.["Medical Benefits"]) {
-    // Combine all benefits from the new API format
-    benefits = [
-      ...(apiResponse.analysis.benefits["Medical Benefits"] || []),
-      ...(apiResponse.analysis.benefits["Financial Benefits"] || []),
-      ...(apiResponse.analysis.benefits["Additional Benefits"] || [])
-    ];
+  } else if (apiResponse.analysis?.benefits) {
+    // Combine all benefits from the new API format - ensure we get ALL benefits
+    const allBenefits = [];
+    if (apiResponse.analysis.benefits["Medical Benefits"]) {
+      allBenefits.push(...apiResponse.analysis.benefits["Medical Benefits"]);
+    }
+    if (apiResponse.analysis.benefits["Financial Benefits"]) {
+      allBenefits.push(...apiResponse.analysis.benefits["Financial Benefits"]);
+    }
+    if (apiResponse.analysis.benefits["Additional Benefits"]) {
+      allBenefits.push(...apiResponse.analysis.benefits["Additional Benefits"]);
+    }
+    benefits = allBenefits;
   } else {
     benefits = ['Standard coverage protection', 'Basic liability coverage'];
   }
   
-  // Extract exclusions from either format
+  // Extract exclusions from either format - ensure we get ALL exclusions
   let exclusions = [];
   
   if (Array.isArray(apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'])) {
@@ -214,7 +219,8 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   } else if (apiResponse.exclusions) {
     exclusions = apiResponse.exclusions;
   } else if (apiResponse.analysis?.major_exclusions) {
-    exclusions = apiResponse.analysis.major_exclusions;
+    // Make sure we get all major exclusions
+    exclusions = [...apiResponse.analysis.major_exclusions];
   } else {
     exclusions = [];
   }

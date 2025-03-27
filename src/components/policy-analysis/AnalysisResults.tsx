@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion, List, FileBarChart, Clock, CreditCard, Phone, Calendar, FileSearch } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
@@ -20,8 +19,8 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     simplified: true, // Set simplified section to expanded by default
     coverage: true,
-    exclusions: false,
-    benefits: false,
+    exclusions: true, // Set exclusions to expanded by default
+    benefits: true, // Set benefits to expanded by default
     loopholes: true,
     deductibles: false,
     recommendations: true,
@@ -60,6 +59,42 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   const policyFilename = result.rawApiResponse && (result.rawApiResponse as any).filename 
     ? (result.rawApiResponse as any).filename 
     : "Uploaded Document";
+
+  // Get all benefits from API response
+  const getAllBenefits = () => {
+    // Start with the main benefits array
+    let allBenefits = [...(result.benefits || [])];
+    
+    // Add benefits from detailed analysis if available
+    if (result.analysis?.benefits) {
+      if (result.analysis.benefits["Medical Benefits"]) {
+        allBenefits = [...allBenefits, ...result.analysis.benefits["Medical Benefits"]];
+      }
+      if (result.analysis.benefits["Financial Benefits"]) {
+        allBenefits = [...allBenefits, ...result.analysis.benefits["Financial Benefits"]];
+      }
+      if (result.analysis.benefits["Additional Benefits"]) {
+        allBenefits = [...allBenefits, ...result.analysis.benefits["Additional Benefits"]];
+      }
+    }
+    
+    // Deduplicate the benefits
+    return [...new Set(allBenefits)];
+  };
+  
+  // Get all exclusions from API response
+  const getAllExclusions = () => {
+    // Start with the main exclusions array
+    let allExclusions = [...(result.exclusions || [])];
+    
+    // Add exclusions from detailed analysis if available
+    if (result.analysis?.major_exclusions) {
+      allExclusions = [...allExclusions, ...result.analysis.major_exclusions];
+    }
+    
+    // Deduplicate the exclusions
+    return [...new Set(allExclusions)];
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
@@ -519,7 +554,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               onClick={() => toggleSection('benefits')}
             >
               <h3 className="text-lg font-semibold text-insura-neon flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2" /> Key Benefits
+                <CheckCircle className="w-5 h-5 mr-2" /> All Benefits
               </h3>
               {expandedSections.benefits ? 
                 <ArrowUp className="w-5 h-5 text-gray-400" /> : 
@@ -531,7 +566,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               <Card className="bg-black/30 border border-gray-800">
                 <CardContent className="p-4">
                   <ul className="space-y-2">
-                    {result.benefits?.map((item: string, index: number) => (
+                    {getAllBenefits().map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <Check className="w-4 h-4 text-green-500 mr-2 mt-1 flex-shrink-0" />
                         <span className="text-gray-300">{item}</span>
@@ -550,7 +585,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               onClick={() => toggleSection('exclusions')}
             >
               <h3 className="text-lg font-semibold text-insura-neon flex items-center">
-                <AlertCircle className="w-5 h-5 mr-2" /> Key Exclusions
+                <AlertCircle className="w-5 h-5 mr-2" /> All Exclusions
               </h3>
               {expandedSections.exclusions ? 
                 <ArrowUp className="w-5 h-5 text-gray-400" /> : 
@@ -562,7 +597,7 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
               <Card className="bg-black/30 border border-gray-800">
                 <CardContent className="p-4">
                   <ul className="space-y-2">
-                    {result.exclusions.map((item: string, index: number) => (
+                    {getAllExclusions().map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <AlertCircle className="w-4 h-4 text-yellow-500 mr-2 mt-1 flex-shrink-0" />
                         <span className="text-gray-300">{item}</span>
