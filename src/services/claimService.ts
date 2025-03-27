@@ -1,5 +1,5 @@
 
-import { API_URL } from './apiConfig';
+import { FRAUD_DETECTION_API } from './apiConfig';
 
 export interface ClaimData {
   INSURANCE_TYPE: string;
@@ -34,7 +34,7 @@ export interface FraudCheckResult {
 export const checkClaimProbability = async (claimData: ClaimData, policyNumber: string): Promise<FraudCheckResult> => {
   try {
     // Call to the fraud detection API
-    const response = await fetch('https://fraud-detection-87in.onrender.com/predict', {
+    const response = await fetch(`${FRAUD_DETECTION_API}/predict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
