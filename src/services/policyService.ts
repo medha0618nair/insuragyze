@@ -1,3 +1,4 @@
+
 import { API_URL, DOC_ANALYSIS_API } from './apiConfig';
 
 export interface PolicyAnalysisResult {
@@ -136,26 +137,41 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   const sumAssured = extractCurrencyValue(sumAssuredStr);
   
   // Extract benefits from either format
-  const benefits = 
-    apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'] || 
-    apiResponse.coverage_details?.additional_benefits || 
-    ['Standard coverage protection', 'Basic liability coverage'];
+  let benefits = [];
+  
+  if (Array.isArray(apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'])) {
+    benefits = apiResponse.content?.['4️⃣ Benefits & Advantages']?.['Key Benefits'];
+  } else if (apiResponse.coverage_details?.additional_benefits) {
+    benefits = apiResponse.coverage_details.additional_benefits;
+  } else {
+    benefits = ['Standard coverage protection', 'Basic liability coverage'];
+  }
   
   // Extract exclusions from either format
-  const exclusions = 
-    apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'] || 
-    apiResponse.exclusions || 
-    [];
+  let exclusions = [];
+  
+  if (Array.isArray(apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'])) {
+    exclusions = apiResponse.content?.['5️⃣ Exclusions & Limitations']?.['Not Covered'];
+  } else if (apiResponse.exclusions) {
+    exclusions = apiResponse.exclusions;
+  } else {
+    exclusions = [];
+  }
   
   // Extract loopholes from either format
-  const loopholes = 
-    apiResponse.content?.['6️⃣ Potential Loopholes & Important Considerations']?.['Important Points to Note'] || 
-    apiResponse.potential_loopholes || 
-    [
+  let loopholes = [];
+  
+  if (Array.isArray(apiResponse.content?.['6️⃣ Potential Loopholes & Important Considerations']?.['Important Points to Note'])) {
+    loopholes = apiResponse.content?.['6️⃣ Potential Loopholes & Important Considerations']?.['Important Points to Note'];
+  } else if (apiResponse.potential_loopholes) {
+    loopholes = apiResponse.potential_loopholes;
+  } else {
+    loopholes = [
       'Coverage may be void if property is unoccupied for more than 30 days',
       'Claims for high-value items require prior registration',
       'Damage due to failure to maintain property may be rejected'
     ];
+  }
   
   // Create appropriate recommendations based on the document
   const recommendations: PolicyAnalysisResult['recommendations'] = [
@@ -262,14 +278,6 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
 
     const apiData: ApiResponse = await response.json();
     console.log('API response data:', apiData);
-    
-    // If no data was returned, use mock data for testing
-    if (!apiData || Object.keys(apiData).length === 0) {
-      console.log('No data returned from API, using mock data');
-      const mockData = getMockPolicyData();
-      const transformedData = transformApiResponse(mockData);
-      return transformedData;
-    }
     
     // Transform the API response to match the expected format
     const transformedData = transformApiResponse(apiData);
