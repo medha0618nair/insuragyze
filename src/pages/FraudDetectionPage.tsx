@@ -84,7 +84,7 @@ const FraudDetectionPage = () => {
         claimData.claim_premium_ratio = claimData.CLAIM_AMOUNT / claimData.PREMIUM_AMOUNT;
       }
 
-      // Call the API service with our data
+      // Call the API service with our data and the policy number
       const result = await checkClaimProbability(claimData, claimDetails.policyNumber);
       
       // Add result to our list
