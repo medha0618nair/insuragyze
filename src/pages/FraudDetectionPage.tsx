@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Shield } from 'lucide-react';
@@ -101,11 +100,8 @@ const FraudDetectionPage = () => {
           numericClaimData.PREMIUM_AMOUNT : 
           parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
         
-        // Convert the number to string to match the ClaimData interface
+        // Convert the ratio to a string to match the ClaimData interface
         numericClaimData.claim_premium_ratio = (claimAmount / premiumAmount).toString();
-      } else if (typeof numericClaimData.claim_premium_ratio === 'number') {
-        // Ensure the ratio is always a string
-        numericClaimData.claim_premium_ratio = numericClaimData.claim_premium_ratio.toString();
       }
 
       const result = await checkClaimProbability(numericClaimData, claimDetails.policyNumber);

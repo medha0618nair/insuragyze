@@ -2,7 +2,6 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ClaimData } from '@/services/claimService';
 
@@ -26,6 +25,9 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
     <>
       <div className="md:col-span-2 mt-4">
         <h3 className="text-xl font-semibold mb-2 text-white">Claim Information</h3>
+        <p className="text-sm text-gray-400 mb-4">
+          Please provide the following details to analyze the claim for potential fraud.
+        </p>
       </div>
 
       <div>
@@ -40,21 +42,8 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           required
           className="bg-gray-800 border-gray-700 text-white"
         />
-      </div>
-
-      <div>
-        <Label htmlFor="avg_claim_amount" className="text-gray-300">Average Claim Amount ($)</Label>
-        <Input
-          id="avg_claim_amount"
-          name="avg_claim_amount"
-          type="number"
-          placeholder="e.g. 4000"
-          value={claimData.avg_claim_amount || ''}
-          onChange={onInputChange}
-          className="bg-gray-800 border-gray-700 text-white"
-        />
         <p className="text-xs text-gray-400 mt-1">
-          Optional: Average claim amount for similar incidents
+          The total amount being claimed
         </p>
       </div>
 
@@ -70,6 +59,9 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           required
           className="bg-gray-800 border-gray-700 text-white"
         />
+        <p className="text-xs text-gray-400 mt-1">
+          Number of days between policy start date and the incident
+        </p>
       </div>
 
       <div>
@@ -85,7 +77,23 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           className="bg-gray-800 border-gray-700 text-white"
         />
         <p className="text-xs text-gray-400 mt-1">
-          Optional: Auto-calculated if left empty
+          Ratio of claim amount to premium amount (auto-calculated if left empty)
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="avg_claim_amount" className="text-gray-300">Average Claim Amount ($)</Label>
+        <Input
+          id="avg_claim_amount"
+          name="avg_claim_amount"
+          type="number"
+          placeholder="e.g. 4000"
+          value={claimData.avg_claim_amount || ''}
+          onChange={onInputChange}
+          className="bg-gray-800 border-gray-700 text-white"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          Average claim amount for similar incidents (optional)
         </p>
       </div>
 
@@ -101,24 +109,6 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
         <p className="text-xs text-gray-400 mt-1">
           Was the claim filed unusually quickly after the incident?
         </p>
-      </div>
-
-      <div>
-        <Label htmlFor="CLAIM_STATUS" className="text-gray-300">Claim Status</Label>
-        <Select 
-          value={claimData.CLAIM_STATUS} 
-          onValueChange={(value) => onSelectChange('CLAIM_STATUS', value)}
-        >
-          <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Open">Open</SelectItem>
-            <SelectItem value="In Progress">In Progress</SelectItem>
-            <SelectItem value="Under Review">Under Review</SelectItem>
-            <SelectItem value="Pending Documentation">Pending Documentation</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
     </>
   );
