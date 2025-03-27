@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { Menu, X, LogOut, User } from 'lucide-react';
@@ -6,6 +5,15 @@ import { ButtonCustom } from './ui/button-custom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +22,6 @@ const Navbar = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial user session
     const getInitialSession = async () => {
       const { data } = await supabase.auth.getSession();
       setUser(data.session?.user || null);
@@ -22,7 +29,6 @@ const Navbar = () => {
     
     getInitialSession();
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user || null);
@@ -46,10 +52,8 @@ const Navbar = () => {
         description: "You have been signed out successfully",
       });
       
-      // Close the menu
       setIsMenuOpen(false);
       
-      // Navigate to home
       navigate('/');
     } catch (error: any) {
       toast({
@@ -65,11 +69,9 @@ const Navbar = () => {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
-    // Close mobile menu after navigation
     setIsMenuOpen(false);
   };
 
-  // Get user name and avatar from Supabase user metadata
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userAvatar = user?.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`;
 
@@ -100,12 +102,32 @@ const Navbar = () => {
               >
                 Chat Assistant
               </button>
-              <button 
-                onClick={() => scrollToSection('ai-tools')} 
-                className="text-gray-300 hover:text-insura-neon transition-colors"
-              >
-                AI Tools
-              </button>
+              <NavigationMenu className="ml-2">
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-gray-300 hover:text-insura-neon bg-transparent h-auto p-0">AI Tools</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[230px] p-2">
+                        <Link to="/tools/fraud-detection" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
+                          Fraud Detection
+                        </Link>
+                        <Link to="/tools/claim-checker" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
+                          Claim Checker
+                        </Link>
+                        <Link to="/tools/premium-calculator" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
+                          Premium Calculator
+                        </Link>
+                        <Link to="/tools/coverage-optimizer" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
+                          Coverage Optimizer
+                        </Link>
+                        <Link to="/tools/policy-analysis" className="block w-full p-2 hover:bg-insura-neon/10 rounded-md text-gray-300 hover:text-insura-neon transition-colors">
+                          Policy Analysis
+                        </Link>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
             </div>
           </div>
           
@@ -157,7 +179,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu */}
       <div className={cn(
         "md:hidden transition-all duration-300 ease-in-out overflow-hidden",
         isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
@@ -181,12 +202,24 @@ const Navbar = () => {
           >
             Chat Assistant
           </button>
-          <button 
-            onClick={() => scrollToSection('ai-tools')}
-            className="block w-full text-left px-3 py-2 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors"
-          >
-            AI Tools
-          </button>
+          <div className="px-3 py-2">
+            <p className="text-gray-300 mb-2">AI Tools</p>
+            <Link to="/tools/fraud-detection" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
+              Fraud Detection
+            </Link>
+            <Link to="/tools/claim-checker" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
+              Claim Checker
+            </Link>
+            <Link to="/tools/premium-calculator" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
+              Premium Calculator
+            </Link>
+            <Link to="/tools/coverage-optimizer" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
+              Coverage Optimizer
+            </Link>
+            <Link to="/tools/policy-analysis" className="block w-full text-left px-3 py-1 rounded-md hover:bg-insura-neon/10 text-gray-300 hover:text-insura-neon transition-colors text-sm ml-2">
+              Policy Analysis
+            </Link>
+          </div>
           
           {user ? (
             <div className="pt-2 space-y-2">
