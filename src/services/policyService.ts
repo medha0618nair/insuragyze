@@ -230,10 +230,19 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
       // Add the file with the field name 'file' instead of 'document'
       apiFormData.append('file', documentFile as Blob);
       console.log('FormData keys after conversion:', [...apiFormData.keys()]);
+      console.log('File being sent:', documentFile);
     } else {
       console.error('No document file found in the FormData');
       throw new Error('No document file provided');
     }
+    
+    // Log detailed request information for debugging
+    console.log('Sending request to API with form data:', {
+      endpoint: DOC_ANALYSIS_API,
+      method: 'POST',
+      fileIncluded: apiFormData.has('file'),
+      fileSize: apiFormData.get('file') instanceof File ? (apiFormData.get('file') as File).size : 'unknown'
+    });
     
     const response = await fetch(DOC_ANALYSIS_API, {
       method: 'POST',
@@ -241,10 +250,14 @@ export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyA
       // Don't set Content-Type header, the browser will set it with the boundary
     });
 
+    console.log('API response status:', response.status);
+    
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API error response:', errorText);
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      console.error('Response status:', response.status);
+      console.error('Response headers:', Object.fromEntries([...response.headers.entries()]));
+      throw new Error(`API error: ${response.status} - ${errorText || 'Unknown error'}`);
     }
 
     const apiData: ApiResponse = await response.json();
