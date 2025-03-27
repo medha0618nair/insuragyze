@@ -40,6 +40,26 @@ export interface PolicyAnalysisResult {
     major_exclusions?: string[];
     coverage_highlights?: string[];
   };
+  // New fields to capture all API data
+  policyDetails?: {
+    issueDate?: string;
+    expiryDate?: string;
+    insurerContact?: string;
+  };
+  premiumInfo?: {
+    amount?: string;
+    frequency?: string;
+    dueDates?: string;
+    gracePeriod?: string;
+  };
+  claimsProcess?: {
+    steps?: string[];
+    documents?: string[];
+    contact?: string;
+    timeframe?: string;
+  };
+  simplifiedSummary?: string;
+  additionalInformation?: string[];
 }
 
 interface ApiResponse {
@@ -259,6 +279,29 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
   const personalProperty = Math.round(sumAssured * 0.5); // 50% of sum assured
   const liability = Math.round(sumAssured * 0.3); // 30% of sum assured
   
+  // Extract additional policy details
+  const policyDetails = {
+    issueDate: apiResponse.content?.['1️⃣ Introduction']?.['Date of Issue'] || apiResponse.policy_details?.issue_date,
+    expiryDate: apiResponse.content?.['1️⃣ Introduction']?.['Expiry Date'] || apiResponse.policy_details?.expiry_date,
+    insurerContact: apiResponse.content?.['1️⃣ Introduction']?.['Insurer Contact'] || apiResponse.policy_details?.insurer_contact
+  };
+  
+  // Extract premium info
+  const premiumInfo = {
+    amount: apiResponse.content?.['3️⃣ Premium & Payment Details']?.['Premium Amount'] || apiResponse.premium_info?.amount,
+    frequency: apiResponse.content?.['3️⃣ Premium & Payment Details']?.['Payment Frequency'] || apiResponse.premium_info?.frequency,
+    dueDates: apiResponse.content?.['3️⃣ Premium & Payment Details']?.['Due Date'] || apiResponse.premium_info?.due_dates,
+    gracePeriod: apiResponse.content?.['3️⃣ Premium & Payment Details']?.['Grace Period'] || apiResponse.premium_info?.grace_period
+  };
+  
+  // Extract claims process if available
+  const claimsProcess = apiResponse.claims_process ? {
+    steps: apiResponse.claims_process.steps,
+    documents: apiResponse.claims_process.documents,
+    contact: apiResponse.claims_process.contact,
+    timeframe: apiResponse.claims_process.timeframe
+  } : undefined;
+  
   return {
     policyName,
     policyNumber,
@@ -278,6 +321,11 @@ const transformApiResponse = (apiResponse: ApiResponse): PolicyAnalysisResult =>
       windHail: 'Not applicable',
     },
     recommendations,
+    policyDetails,
+    premiumInfo,
+    claimsProcess,
+    simplifiedSummary: apiResponse.simplified_summary,
+    additionalInformation: apiResponse.additional_information,
     rawApiResponse: apiResponse, // Include the complete API response
     analysis: apiResponse.analysis // Include the structured analysis from the new API
   };

@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion, List } from 'lucide-react';
+import { Check, FileText, AlertCircle, CheckCircle, Info, ArrowDown, ArrowUp, Code, FileQuestion, List, FileBarChart, Clock, CreditCard, Phone, Calendar, FileSearch } from 'lucide-react';
 import { ButtonCustom } from '@/components/ui/button-custom';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +26,10 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
     deductibles: false,
     recommendations: true,
     rawData: false,
-    detailedAnalysis: true // New section for detailed analysis
+    detailedAnalysis: true, // New section for detailed analysis
+    policyDetails: true, // New section for policy details
+    premiumInfo: false, // New section for premium info
+    claimsProcess: false // New section for claims process
   });
 
   const toggleSection = (section: string) => {
@@ -48,9 +52,9 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
   };
 
   // Extract simplified summary from raw API response if available
-  const simplifiedSummary = result.rawApiResponse && (result.rawApiResponse as any).simplified_summary
-    ? (result.rawApiResponse as any).simplified_summary
-    : "Your policy has been analyzed and the key points have been extracted. Please review the coverage highlights, benefits, exclusions, and recommendations below.";
+  const simplifiedSummary = result.simplifiedSummary || 
+    (result.rawApiResponse && (result.rawApiResponse as any).simplified_summary) ||
+    "Your policy has been analyzed and the key points have been extracted. Please review the coverage highlights, benefits, exclusions, and recommendations below.";
 
   // Get filename from raw response
   const policyFilename = result.rawApiResponse && (result.rawApiResponse as any).filename 
@@ -105,12 +109,190 @@ const AnalysisResults: React.FC<AnalysisResultsProps> = ({ result, onReset }) =>
                   <div className="bg-gradient-to-r from-insura-neon/10 to-insura-purple/10 p-4 rounded-lg text-gray-200">
                     {simplifiedSummary}
                   </div>
+                  
+                  {/* Additional Information if available */}
+                  {result.additionalInformation && result.additionalInformation.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h4 className="text-sm font-semibold text-white">Additional Information</h4>
+                      <ul className="list-disc pl-5 space-y-1">
+                        {result.additionalInformation.map((info, index) => (
+                          <li key={index} className="text-gray-300 text-sm">{info}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Detailed Analysis Section - New! */}
+          {/* Policy Details Section - New! */}
+          <div className="space-y-4">
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => toggleSection('policyDetails')}
+            >
+              <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                <FileSearch className="w-5 h-5 mr-2" /> Policy Details
+              </h3>
+              {expandedSections.policyDetails ? 
+                <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                <ArrowDown className="w-5 h-5 text-gray-400" />
+              }
+            </div>
+            
+            {expandedSections.policyDetails && (
+              <Card className="bg-black/30 border border-insura-purple/30">
+                <CardContent className="p-4">
+                  <Table>
+                    <TableBody>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-400 font-medium">Insurer</TableCell>
+                        <TableCell className="text-white">{result.providerName || "Not specified"}</TableCell>
+                      </TableRow>
+                      <TableRow className="border-gray-800">
+                        <TableCell className="text-gray-400 font-medium">Policy Number</TableCell>
+                        <TableCell className="text-white">{result.policyNumber || "Not available"}</TableCell>
+                      </TableRow>
+                      {result.policyDetails?.issueDate && (
+                        <TableRow className="border-gray-800">
+                          <TableCell className="text-gray-400 font-medium">Issue Date</TableCell>
+                          <TableCell className="text-white">{result.policyDetails.issueDate}</TableCell>
+                        </TableRow>
+                      )}
+                      {result.policyDetails?.expiryDate && (
+                        <TableRow className="border-gray-800">
+                          <TableCell className="text-gray-400 font-medium">Expiry Date</TableCell>
+                          <TableCell className="text-white">{result.policyDetails.expiryDate}</TableCell>
+                        </TableRow>
+                      )}
+                      {result.policyDetails?.insurerContact && (
+                        <TableRow className="border-gray-800">
+                          <TableCell className="text-gray-400 font-medium">Insurer Contact</TableCell>
+                          <TableCell className="text-white">{result.policyDetails.insurerContact}</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Premium Information Section - New! */}
+          {result.premiumInfo && (result.premiumInfo.amount || result.premiumInfo.frequency) && (
+            <div className="space-y-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer" 
+                onClick={() => toggleSection('premiumInfo')}
+              >
+                <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                  <CreditCard className="w-5 h-5 mr-2" /> Premium Information
+                </h3>
+                {expandedSections.premiumInfo ? 
+                  <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                  <ArrowDown className="w-5 h-5 text-gray-400" />
+                }
+              </div>
+              
+              {expandedSections.premiumInfo && (
+                <Card className="bg-black/30 border border-insura-purple/30">
+                  <CardContent className="p-4">
+                    <Table>
+                      <TableBody>
+                        {result.premiumInfo.amount && (
+                          <TableRow className="border-gray-800">
+                            <TableCell className="text-gray-400 font-medium">Premium Amount</TableCell>
+                            <TableCell className="text-white">{result.premiumInfo.amount}</TableCell>
+                          </TableRow>
+                        )}
+                        {result.premiumInfo.frequency && (
+                          <TableRow className="border-gray-800">
+                            <TableCell className="text-gray-400 font-medium">Payment Frequency</TableCell>
+                            <TableCell className="text-white">{result.premiumInfo.frequency}</TableCell>
+                          </TableRow>
+                        )}
+                        {result.premiumInfo.dueDates && (
+                          <TableRow className="border-gray-800">
+                            <TableCell className="text-gray-400 font-medium">Due Dates</TableCell>
+                            <TableCell className="text-white">{result.premiumInfo.dueDates}</TableCell>
+                          </TableRow>
+                        )}
+                        {result.premiumInfo.gracePeriod && (
+                          <TableRow className="border-gray-800">
+                            <TableCell className="text-gray-400 font-medium">Grace Period</TableCell>
+                            <TableCell className="text-white">{result.premiumInfo.gracePeriod}</TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Claims Process Section - New! */}
+          {result.claimsProcess && (
+            <div className="space-y-4">
+              <div 
+                className="flex items-center justify-between cursor-pointer" 
+                onClick={() => toggleSection('claimsProcess')}
+              >
+                <h3 className="text-lg font-semibold text-insura-neon flex items-center">
+                  <FileBarChart className="w-5 h-5 mr-2" /> Claims Process
+                </h3>
+                {expandedSections.claimsProcess ? 
+                  <ArrowUp className="w-5 h-5 text-gray-400" /> : 
+                  <ArrowDown className="w-5 h-5 text-gray-400" />
+                }
+              </div>
+              
+              {expandedSections.claimsProcess && (
+                <Card className="bg-black/30 border border-insura-purple/30">
+                  <CardContent className="p-4 space-y-4">
+                    {result.claimsProcess.steps && result.claimsProcess.steps.length > 0 && (
+                      <div>
+                        <h4 className="text-md font-semibold text-white mb-2">Claim Steps</h4>
+                        <ol className="list-decimal pl-5 space-y-1">
+                          {result.claimsProcess.steps.map((step, index) => (
+                            <li key={index} className="text-gray-300">{step}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    
+                    {result.claimsProcess.documents && result.claimsProcess.documents.length > 0 && (
+                      <div>
+                        <h4 className="text-md font-semibold text-white mb-2">Required Documents</h4>
+                        <ul className="list-disc pl-5 space-y-1">
+                          {result.claimsProcess.documents.map((doc, index) => (
+                            <li key={index} className="text-gray-300">{doc}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {result.claimsProcess.timeframe && (
+                      <div>
+                        <h4 className="text-md font-semibold text-white mb-2">Timeframe</h4>
+                        <p className="text-gray-300">{result.claimsProcess.timeframe}</p>
+                      </div>
+                    )}
+                    
+                    {result.claimsProcess.contact && (
+                      <div>
+                        <h4 className="text-md font-semibold text-white mb-2">Contact for Claims</h4>
+                        <p className="text-gray-300">{result.claimsProcess.contact}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Detailed Analysis Section */}
           {result.analysis && (
             <div className="space-y-4">
               <div 
