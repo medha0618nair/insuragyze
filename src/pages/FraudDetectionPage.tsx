@@ -86,17 +86,25 @@ const FraudDetectionPage = () => {
       numericFields.forEach(field => {
         // Use type assertion to tell TypeScript that we're accessing a key of numericClaimData
         const key = field as keyof ClaimData;
-        // Convert string to number and assign it back
-        numericClaimData[key] = parseFloat(numericClaimData[key] as string) || 0;
+        // Convert string to number and assign it back - need to handle possible mixed types
+        if (typeof numericClaimData[key] === 'string') {
+          numericClaimData[key] = parseFloat(numericClaimData[key] as string) || 0;
+        }
       });
       
       // Calculate claim_premium_ratio if not set manually
       if (
         (!numericClaimData.claim_premium_ratio || numericClaimData.claim_premium_ratio === '') && 
-        parseFloat(numericClaimData.PREMIUM_AMOUNT as string) > 0
+        typeof numericClaimData.PREMIUM_AMOUNT === 'number' && numericClaimData.PREMIUM_AMOUNT > 0
       ) {
-        const claimAmount = parseFloat(numericClaimData.CLAIM_AMOUNT as string) || 0;
-        const premiumAmount = parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
+        const claimAmount = typeof numericClaimData.CLAIM_AMOUNT === 'number' ? 
+          numericClaimData.CLAIM_AMOUNT : 
+          parseFloat(numericClaimData.CLAIM_AMOUNT as string) || 0;
+        
+        const premiumAmount = typeof numericClaimData.PREMIUM_AMOUNT === 'number' ? 
+          numericClaimData.PREMIUM_AMOUNT : 
+          parseFloat(numericClaimData.PREMIUM_AMOUNT as string) || 1;
+        
         numericClaimData.claim_premium_ratio = claimAmount / premiumAmount;
       }
 
