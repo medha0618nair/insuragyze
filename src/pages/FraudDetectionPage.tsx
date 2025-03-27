@@ -39,6 +39,8 @@ const FraudDetectionPage = () => {
     claim_premium_ratio: '',
     INCIDENT_HOUR_OF_THE_DAY: '',
     ANY_INJURY: 0,
+    avg_claim_amount: '',
+    quick_claim: 0
   });
   const [claimDetails, setClaimDetails] = useState<ClaimDetails>({
     policyNumber: '',
@@ -76,7 +78,8 @@ const FraudDetectionPage = () => {
       
       const numericFields = [
         'PREMIUM_AMOUNT', 'CLAIM_AMOUNT', 'AGE', 'TENURE', 
-        'NO_OF_FAMILY_MEMBERS', 'days_to_loss', 'INCIDENT_HOUR_OF_THE_DAY', 'ANY_INJURY'
+        'NO_OF_FAMILY_MEMBERS', 'days_to_loss', 'INCIDENT_HOUR_OF_THE_DAY', 
+        'ANY_INJURY', 'avg_claim_amount', 'quick_claim'
       ];
       
       numericFields.forEach(field => {

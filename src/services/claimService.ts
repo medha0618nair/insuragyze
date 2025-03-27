@@ -20,6 +20,8 @@ export interface ClaimData {
   claim_premium_ratio: string | number;
   INCIDENT_HOUR_OF_THE_DAY: string | number;
   ANY_INJURY: string | number;
+  avg_claim_amount?: string | number;
+  quick_claim?: string | number;
 }
 
 export interface FraudCheckResult {
@@ -32,33 +34,45 @@ export interface FraudCheckResult {
 }
 
 export const checkClaimProbability = async (claimData: ClaimData, policyNumber: string): Promise<FraudCheckResult> => {
-  // Validate and ensure non-negative values for numeric fields
-  const validatedData = {
-    age: Math.max(0, Number(claimData.AGE)),
-    income: 0, // Default value since it's not in our data model
-    claim_amount: Math.max(0, Number(claimData.CLAIM_AMOUNT)),
-    policy_number: policyNumber,
-    insurance_type: String(claimData.INSURANCE_TYPE).toLowerCase(),
-    marital_status: String(claimData.MARITAL_STATUS).toLowerCase(),
-    employment_status: String(claimData.EMPLOYMENT_STATUS).toLowerCase(),
-    risk_segmentation: String(claimData.RISK_SEGMENTATION).toLowerCase(),
-    house_type: String(claimData.HOUSE_TYPE).toLowerCase(),
-    social_class: String(claimData.SOCIAL_CLASS).toLowerCase(),
-    customer_education_level: String(claimData.CUSTOMER_EDUCATION_LEVEL).toLowerCase(),
-    claim_status: String(claimData.CLAIM_STATUS).toLowerCase(),
-    incident_severity: String(claimData.INCIDENT_SEVERITY).toLowerCase(),
-    premium_amount: Math.max(0, Number(claimData.PREMIUM_AMOUNT)),
-    tenure: Math.max(0, Number(claimData.TENURE)), // Ensure non-negative
-    no_of_family_members: Math.max(0, Number(claimData.NO_OF_FAMILY_MEMBERS)), // Ensure non-negative
-    days_to_loss: Math.max(0, Number(claimData.days_to_loss)), // Ensure non-negative
-    claim_premium_ratio: Number(claimData.claim_premium_ratio) > 0 ? 
-      Number(claimData.claim_premium_ratio) : 
-      Math.max(0, Number(claimData.CLAIM_AMOUNT)) / Math.max(1, Number(claimData.PREMIUM_AMOUNT)),
-    incident_hour_of_the_day: Math.min(23, Math.max(0, Number(claimData.INCIDENT_HOUR_OF_THE_DAY))), // Ensure between 0-23
-    any_injury: Number(claimData.ANY_INJURY) === 1 ? 1 : 0
+  // Create the payload for the new API based on the screenshot
+  const claimAmount = typeof claimData.CLAIM_AMOUNT === 'number' ? 
+    claimData.CLAIM_AMOUNT : 
+    parseFloat(String(claimData.CLAIM_AMOUNT)) || 0;
+    
+  const daysToLoss = typeof claimData.days_to_loss === 'number' ? 
+    claimData.days_to_loss : 
+    parseFloat(String(claimData.days_to_loss)) || 0;
+    
+  let claimPremiumRatio: number;
+  if (claimData.claim_premium_ratio) {
+    claimPremiumRatio = typeof claimData.claim_premium_ratio === 'number' ? 
+      claimData.claim_premium_ratio : 
+      parseFloat(String(claimData.claim_premium_ratio)) || 0;
+  } else {
+    const premiumAmount = typeof claimData.PREMIUM_AMOUNT === 'number' ? 
+      claimData.PREMIUM_AMOUNT : 
+      parseFloat(String(claimData.PREMIUM_AMOUNT)) || 1;
+    claimPremiumRatio = claimAmount / premiumAmount;
+  }
+  
+  const avgClaimAmount = typeof claimData.avg_claim_amount === 'number' ? 
+    claimData.avg_claim_amount : 
+    parseFloat(String(claimData.avg_claim_amount)) || claimAmount;
+    
+  const quickClaim = typeof claimData.quick_claim === 'number' ? 
+    claimData.quick_claim : 
+    parseInt(String(claimData.quick_claim)) || 0;
+
+  // Prepare the request payload according to the API documentation
+  const payload = {
+    CLAIM_AMOUNT: claimAmount,
+    days_to_loss: daysToLoss,
+    claim_premium_ratio: claimPremiumRatio,
+    avg_claim_amount: avgClaimAmount,
+    quick_claim: quickClaim
   };
 
-  console.log("Sending data to fraud detection API:", validatedData);
+  console.log("Sending data to fraud detection API:", payload);
   
   // Make the API call to the endpoint
   const response = await fetch(`${FRAUD_DETECTION_API}/predict`, {
@@ -67,7 +81,7 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: JSON.stringify(validatedData),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -80,18 +94,35 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
   const apiResponse = await response.json();
   console.log("API Response:", apiResponse);
 
-  // Convert the API's response format to our application's expected format
-  const fraudProbability = apiResponse.fraud_probability * 100;
-  const isHighRisk = apiResponse.is_high_risk;
-  
-  // Determine risk level based on fraud probability and is_high_risk flag
+  // Determine risk level based on fraud probability
   let riskLevel: 'low' | 'medium' | 'high';
-  if (isHighRisk) {
+  const fraudProbability = apiResponse.fraud_probability * 100;
+  
+  if (fraudProbability > 70) {
     riskLevel = 'high';
-  } else if (fraudProbability > 50) {
+  } else if (fraudProbability > 30) {
     riskLevel = 'medium';
   } else {
     riskLevel = 'low';
+  }
+
+  // Generate risk factors based on the input data
+  const riskFactors: string[] = [];
+  
+  if (claimPremiumRatio > 2) {
+    riskFactors.push("High claim to premium ratio");
+  }
+  
+  if (daysToLoss < 30) {
+    riskFactors.push("Very short time between policy start and claim");
+  }
+  
+  if (quickClaim === 1) {
+    riskFactors.push("Claim filed unusually quickly after incident");
+  }
+  
+  if (claimAmount > avgClaimAmount * 1.5) {
+    riskFactors.push("Claim amount significantly above average");
   }
 
   // Format the result in our application's expected structure
@@ -100,7 +131,7 @@ export const checkClaimProbability = async (claimData: ClaimData, policyNumber: 
     policyNumber: policyNumber,
     fraudProbability: fraudProbability,
     riskLevel: riskLevel,
-    riskFactors: apiResponse.risk_factors || [],
+    riskFactors: riskFactors,
     timestamp: new Date().toISOString()
   };
 

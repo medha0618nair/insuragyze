@@ -3,6 +3,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { ClaimData } from '@/services/claimService';
 
 interface ClaimInfoFormProps {
@@ -16,6 +17,11 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
   onInputChange,
   onSelectChange,
 }) => {
+  // Handler for the quick claim switch toggle
+  const handleQuickClaimToggle = (checked: boolean) => {
+    onSelectChange('quick_claim', checked ? '1' : '0');
+  };
+
   return (
     <>
       <div className="md:col-span-2 mt-4">
@@ -34,6 +40,22 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
           required
           className="bg-gray-800 border-gray-700 text-white"
         />
+      </div>
+
+      <div>
+        <Label htmlFor="avg_claim_amount" className="text-gray-300">Average Claim Amount ($)</Label>
+        <Input
+          id="avg_claim_amount"
+          name="avg_claim_amount"
+          type="number"
+          placeholder="e.g. 4000"
+          value={claimData.avg_claim_amount || ''}
+          onChange={onInputChange}
+          className="bg-gray-800 border-gray-700 text-white"
+        />
+        <p className="text-xs text-gray-400 mt-1">
+          Optional: Average claim amount for similar incidents
+        </p>
       </div>
 
       <div>
@@ -64,6 +86,20 @@ const ClaimInfoForm: React.FC<ClaimInfoFormProps> = ({
         />
         <p className="text-xs text-gray-400 mt-1">
           Optional: Auto-calculated if left empty
+        </p>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="quick_claim" className="text-gray-300">Quick Claim Filing</Label>
+          <Switch 
+            id="quick_claim"
+            checked={claimData.quick_claim === 1 || claimData.quick_claim === '1'}
+            onCheckedChange={handleQuickClaimToggle}
+          />
+        </div>
+        <p className="text-xs text-gray-400 mt-1">
+          Was the claim filed unusually quickly after the incident?
         </p>
       </div>
 
