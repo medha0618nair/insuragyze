@@ -53,7 +53,9 @@ const ClaimCheckerPage = () => {
     setIsLoading(true);
     
     try {
-      const result = await checkClaimProbability(formData);
+      // Fix: The function expects 2 arguments, but only 1 is provided
+      // Adding a dummy policy number as the second argument
+      const result = await checkClaimProbability(formData, "POLICY-" + Math.floor(Math.random() * 10000));
       setResults(result);
       toast({
         title: "Analysis Complete",
