@@ -10,21 +10,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Company Info */}
           <div>
-            <h3 className="text-2xl font-bold mb-6 insura-gradient-text">InsuraAI</h3>
+            <h3 className="text-2xl font-bold mb-6">InsuraAI</h3>
             <p className="text-gray-400 mb-6">
               Making insurance simple, accessible, and transparent with the power of artificial intelligence.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-insura-blue transition-colors duration-300">
+              <a href="#" className="text-gray-400 hover:text-blue-500 transition-colors duration-300">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-insura-blue transition-colors duration-300">
+              <a href="#" className="text-gray-400 hover:text-blue-500 transition-colors duration-300">
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-insura-blue transition-colors duration-300">
+              <a href="#" className="text-gray-400 hover:text-blue-500 transition-colors duration-300">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-insura-blue transition-colors duration-300">
+              <a href="#" className="text-gray-400 hover:text-blue-500 transition-colors duration-300">
                 <Linkedin size={20} />
               </a>
             </div>
@@ -72,7 +72,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-6">Contact Us</h4>
             <ul className="space-y-4">
               <li className="flex items-start">
-                <MapPin size={20} className="mr-3 text-insura-blue flex-shrink-0 mt-1" />
+                <MapPin size={20} className="mr-3 text-blue-500 flex-shrink-0 mt-1" />
                 <span className="text-gray-400">
                   Doddaballapur Main Rd, Yelahanka,<br />
                   Avalahalli, Bengaluru,<br />
@@ -80,13 +80,13 @@ const Footer = () => {
                 </span>
               </li>
               <li className="flex items-center">
-                <PhoneCall size={20} className="mr-3 text-insura-blue flex-shrink-0" />
+                <PhoneCall size={20} className="mr-3 text-blue-500 flex-shrink-0" />
                 <a href="tel:+918073451755" className="text-gray-400 hover:text-white transition-colors duration-300">
                   8073451755
                 </a>
               </li>
               <li className="flex items-center">
-                <Mail size={20} className="mr-3 text-insura-blue flex-shrink-0" />
+                <Mail size={20} className="mr-3 text-blue-500 flex-shrink-0" />
                 <a href="mailto:info@insura-ai.com" className="text-gray-400 hover:text-white transition-colors duration-300">
                   info@insura-ai.com
                 </a>
@@ -104,7 +104,7 @@ const Footer = () => {
               <input 
                 type="email" 
                 placeholder="Your email address" 
-                className="bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-insura-blue"
+                className="bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
               />
               <ButtonCustom 
                 variant="primary" 
