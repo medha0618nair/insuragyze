@@ -74,14 +74,15 @@ const Footer = () => {
               <li className="flex items-start">
                 <MapPin size={20} className="mr-3 text-insura-blue flex-shrink-0 mt-1" />
                 <span className="text-gray-400">
-                  123 Tech Plaza, Suite 500<br />
-                  San Francisco, CA 94107
+                  Doddaballapur Main Rd, Yelahanka,<br />
+                  Avalahalli, Bengaluru,<br />
+                  Karnataka 560064
                 </span>
               </li>
               <li className="flex items-center">
                 <PhoneCall size={20} className="mr-3 text-insura-blue flex-shrink-0" />
-                <a href="tel:+14155552671" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  (415) 555-2671
+                <a href="tel:+918073451755" className="text-gray-400 hover:text-white transition-colors duration-300">
+                  8073451755
                 </a>
               </li>
               <li className="flex items-center">
