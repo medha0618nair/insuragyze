@@ -28,7 +28,7 @@ const FraudDetectionForm: React.FC<FraudDetectionFormProps> = ({
   onSubmit,
 }) => {
   return (
-    <div className="glass-card p-6 overflow-y-auto max-h-[800px]">
+    <div className="glass-card rounded-xl p-6 overflow-y-auto max-h-[800px]">
       <h2 className="text-2xl font-semibold mb-4 text-white">Claim Details</h2>
       <form onSubmit={onSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -73,10 +73,7 @@ const FraudDetectionForm: React.FC<FraudDetectionFormProps> = ({
         
         <ButtonCustom
           type="submit"
-          variant="cyber"
-          size="md"
-          className="w-full mt-4"
-          glow={true}
+          className="w-full bg-gradient-to-r from-insura-neon to-insura-purple hover:shadow-lg hover:shadow-insura-purple/20 mt-4"
           disabled={isLoading}
         >
           {isLoading ? (
