@@ -46,7 +46,7 @@ const ResultsHeader: React.FC<ResultsHeaderProps> = ({
         </div>
       </div>
       <p className="mt-3 text-gray-300">
-        Based on your profile, here are your top insurance matches ranked by suitability.
+        Based on your profile, here are your top insurance plans with key benefits and major exclusions.
       </p>
     </div>
   );
