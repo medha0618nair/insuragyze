@@ -192,23 +192,23 @@ const InsuranceRecommender = () => {
   };
 
   return (
-    <section id="insurance-recommender" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="insurance-recommender" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-black to-slate-900">
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <div className="inline-block px-3 py-1 rounded-full bg-insura-blue/10 text-insura-blue font-medium text-sm mb-4">
+            <div className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-insura-blue/20 to-insura-neon/20 text-insura-neon font-medium text-sm mb-4 border border-insura-neon/30">
               AI Recommendation Engine
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
               Find Your Perfect Insurance Plan
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               Answer a few questions about yourself and let our AI find the best insurance plans tailored just for you.
             </p>
           </div>
 
           {step === 'form' ? (
-            <div className="bg-white shadow-lg rounded-2xl p-8 md:p-10">
+            <div className="glass-card rounded-2xl p-8 md:p-10 border border-gray-800">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -377,18 +377,16 @@ const InsuranceRecommender = () => {
                     fullWidth
                     size="lg"
                     disabled={isLoading}
+                    className="bg-gradient-to-r from-insura-blue to-insura-neon"
                   >
                     {isLoading ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin mr-3"></div>
                         Finding Your Best Plans...
                       </>
                     ) : (
                       <>
-                        <Filter className="mr-2 h-5 w-5" />
+                        <TrendingUp className="mr-2 h-5 w-5" />
                         Find My Best Insurance Plans
                       </>
                     )}
@@ -406,138 +404,13 @@ const InsuranceRecommender = () => {
               </form>
             </div>
           ) : (
-            <div className="animate-fade-in">
-              <div className="bg-insura-blue/5 rounded-2xl p-6 mb-8 border border-insura-blue/20">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center">
-                    <Shield className="h-6 w-6 text-insura-blue mr-3" />
-                    <h3 className="text-xl font-bold text-gray-900">Your Personalized Recommendations</h3>
-                  </div>
-                  <ButtonCustom
-                    variant="outline"
-                    size="sm"
-                    onClick={resetForm}
-                  >
-                    Modify Your Details
-                  </ButtonCustom>
-                </div>
-                <p className="mt-3 text-gray-600">
-                  Based on your profile as a {formData.age}-year-old {formData.smokingStatus.toLowerCase()}, 
-                  here are your top insurance matches ranked by suitability.
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                {recommendedPlans.map((plan, index) => (
-                  <div 
-                    key={plan.id} 
-                    className={`bg-white rounded-xl shadow-md overflow-hidden border transition-all ${
-                      index === 0 ? 'border-insura-blue scale-102 shadow-lg' : 'border-gray-200 hover:shadow-lg hover:-translate-y-1'
-                    }`}
-                  >
-                    <div className="p-6 sm:p-8">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                        <div>
-                          {index === 0 && (
-                            <div className="inline-block px-3 py-1 rounded-full bg-insura-blue text-white text-xs font-medium mb-2 flex items-center">
-                              <Heart className="h-3 w-3 mr-1" />
-                              Best Match
-                            </div>
-                          )}
-                          <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                          <p className="text-sm text-gray-500">by {plan.provider}</p>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <div className="bg-insura-blue/10 rounded-lg py-2 px-3 flex items-center">
-                            <ThumbsUp className="h-5 w-5 text-insura-blue mr-1" />
-                            <span className="font-bold text-insura-blue">{plan.suitabilityScore}% Match</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-                        <div>
-                          <p className="text-sm text-gray-500 mb-1">Monthly Premium</p>
-                          <p className="text-xl font-bold text-gray-900">{plan.monthlyPremium}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500 mb-1">Coverage Amount</p>
-                          <p className="text-xl font-bold text-gray-900">{plan.coverageAmount}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500 mb-1">Best For</p>
-                          <p className="text-base font-medium text-gray-800">{plan.description}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mb-6">
-                        <p className="text-sm text-gray-500 mb-2">Key Benefits</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {plan.benefits.map((benefit, i) => (
-                            <div key={i} className="flex items-center">
-                              <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                              <span className="text-sm text-gray-700">{benefit}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <ButtonCustom
-                          variant={index === 0 ? "primary" : "outline"}
-                          icon={index === 0 ? <Check className="h-4 w-4" /> : undefined}
-                          iconPosition="left"
-                        >
-                          Get More Details
-                        </ButtonCustom>
-                        
-                        <ButtonCustom
-                          variant={index === 0 ? "secondary" : "ghost"}
-                        >
-                          Compare
-                        </ButtonCustom>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-10 bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">Why These Recommendations?</h3>
-                <p className="text-gray-600 mb-4">
-                  Our AI analyzes multiple factors to find plans that best match your profile, including:
-                </p>
-                <ul className="space-y-2">
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Your age and health preferences</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Smoking status and pre-existing conditions</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Your budget constraints and value priorities</span>
-                  </li>
-                  <li className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Regional factors that affect insurance pricing</span>
-                  </li>
-                </ul>
-                <div className="mt-4">
-                  <ButtonCustom
-                    variant="primary"
-                    size="sm"
-                    fullWidth
-                    onClick={resetForm}
-                  >
-                    Start a New Recommendation
-                  </ButtonCustom>
-                </div>
-              </div>
-            </div>
+            <RecommendationResults 
+              recommendedPlans={recommendedPlans}
+              formData={{ age: formData.age, smokingStatus: formData.smokingStatus }}
+              currency={'USD'} 
+              onResetForm={resetForm}
+              onToggleCurrency={() => {}}
+            />
           )}
         </div>
       </div>
