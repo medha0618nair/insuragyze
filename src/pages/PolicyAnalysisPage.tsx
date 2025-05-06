@@ -11,12 +11,15 @@ import PageHeader from '@/components/policy-analysis/PageHeader';
 import { BrainCircuit } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const PolicyAnalysisPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<PolicyAnalysisResult | null>(null);
+  const [rawResponse, setRawResponse] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showRawJson, setShowRawJson] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = (selectedFile: File) => {
@@ -37,6 +40,7 @@ const PolicyAnalysisPage = () => {
 
     setIsAnalyzing(true);
     setError(null);
+    setRawResponse(null);
     
     try {
       const formData = new FormData();
@@ -49,6 +53,7 @@ const PolicyAnalysisPage = () => {
       console.log('Analysis result received:', result);
       
       setAnalysisResult(result);
+      setRawResponse(result); // Store the raw response
       
       toast({
         title: "Analysis Complete",
@@ -56,7 +61,7 @@ const PolicyAnalysisPage = () => {
       });
     } catch (error) {
       console.error("Error analyzing document:", error);
-      setError("There was an error analyzing your document. The new API endpoint may require specific file formats. Please try a PDF file or try again later.");
+      setError("There was an error analyzing your document. The API endpoint may require specific file formats. Please try a PDF file or try again later.");
       toast({
         title: "Analysis Failed",
         description: "There was an error analyzing your document. Please try a different file format or try again later.",
@@ -70,7 +75,13 @@ const PolicyAnalysisPage = () => {
   const handleReset = () => {
     setFile(null);
     setAnalysisResult(null);
+    setRawResponse(null);
     setError(null);
+    setShowRawJson(false);
+  };
+
+  const toggleRawJson = () => {
+    setShowRawJson(!showRawJson);
   };
 
   return (
@@ -105,7 +116,28 @@ const PolicyAnalysisPage = () => {
               </div>
             </div>
           ) : (
-            <AnalysisResults result={analysisResult} onReset={handleReset} />
+            <div>
+              <div className="flex justify-end mb-4">
+                <Button 
+                  onClick={toggleRawJson} 
+                  variant="outline"
+                  className="text-insura-neon border-insura-neon hover:bg-insura-neon/10"
+                >
+                  {showRawJson ? "Hide Raw JSON" : "Show Raw JSON"}
+                </Button>
+              </div>
+              
+              {showRawJson && rawResponse && (
+                <div className="cyber-card rounded-xl p-6 mb-6 overflow-x-auto">
+                  <h2 className="text-xl font-semibold text-white mb-4">Raw API Response</h2>
+                  <pre className="bg-black/40 p-4 rounded-lg text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
+                    {JSON.stringify(rawResponse, null, 2)}
+                  </pre>
+                </div>
+              )}
+              
+              <AnalysisResults result={analysisResult} onReset={handleReset} />
+            </div>
           )}
 
           <FeatureDescription />
