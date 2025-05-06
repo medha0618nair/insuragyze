@@ -1,5 +1,6 @@
 
-import { apiClient } from './apiConfig';
+import { apiClient, DOC_ANALYSIS_API } from './apiConfig';
+import axios from 'axios';
 
 export interface PolicyAnalysisResult {
   simplifiedExplanation: string;
@@ -27,7 +28,9 @@ export interface PolicyAnalysisResult {
 export const analyzePolicyDocument = async (formData: FormData): Promise<PolicyAnalysisResult> => {
   try {
     console.log('Sending document for analysis...');
-    const response = await apiClient.post('/policy/analyze', formData, {
+    
+    // Use the direct URL for the analysis API
+    const response = await axios.post(DOC_ANALYSIS_API, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
