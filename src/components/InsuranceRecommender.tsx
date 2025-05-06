@@ -18,6 +18,8 @@ import {
   RecommendationModelParams, 
   ModelRecommendationResponse 
 } from '@/services/insuranceService';
+import { RecommendedPlan } from '@/types/insurance';
+import { convertToINR } from '@/utils/currencyUtils';
 
 interface FormData {
   fullName: string;
@@ -38,7 +40,9 @@ interface RecommendedPlan {
   name: string;
   provider: string;
   monthlyPremium: string;
+  monthlyPremiumINR: string;
   coverageAmount: string;
+  coverageAmountINR: string;
   benefits: string[];
   suitabilityScore: number;
   description: string;
@@ -62,6 +66,7 @@ const InsuranceRecommender = () => {
   });
   const [recommendedPlans, setRecommendedPlans] = useState<RecommendedPlan[]>([]);
   const [apiResponse, setApiResponse] = useState<any>(null);
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -97,12 +102,26 @@ const InsuranceRecommender = () => {
         }
       }
       
+      // Get the dollar amount as a number for conversion
+      const monthlyPremium = plan.Monthly_Premium || (95 - index * 7);
+      const coverageAmount = plan.Coverage_Amount || 1000000 - (index * 200000);
+      
+      // Format amounts correctly with currency symbols
+      const formattedMonthlyPremium = `$${monthlyPremium.toFixed(2)}`;
+      const formattedCoverageAmount = `$${coverageAmount.toLocaleString()}`;
+      
+      // Create INR versions with currency conversion
+      const monthlyPremiumINR = `₹${convertToINR(monthlyPremium).toLocaleString()}`;
+      const coverageAmountINR = `₹${convertToINR(coverageAmount).toLocaleString()}`;
+      
       return {
         id: `plan-${index + 1}`,
         name: plan.Plan_Name || `Health Plan ${index + 1}`,
         provider: plan.Insurance_Provider || 'Insurance Provider',
-        monthlyPremium: `$${plan.Monthly_Premium?.toFixed(2) || '0.00'}`,
-        coverageAmount: `$${plan.Coverage_Amount?.toLocaleString() || '0'}`,
+        monthlyPremium: formattedMonthlyPremium,
+        monthlyPremiumINR: monthlyPremiumINR,
+        coverageAmount: formattedCoverageAmount,
+        coverageAmountINR: coverageAmountINR,
         benefits: benefits,
         suitabilityScore: plan.Match_Score || (95 - index * 7),
         description: plan.Plan_Description || 'A comprehensive health insurance plan.'
@@ -117,7 +136,9 @@ const InsuranceRecommender = () => {
         name: 'Premium Health Plus',
         provider: 'BlueCross Insurance',
         monthlyPremium: '$285',
+        monthlyPremiumINR: '₹23,700',
         coverageAmount: '$1,000,000',
+        coverageAmountINR: '₹83,000,000',
         benefits: ['Comprehensive hospital coverage', 'Mental health support', 'Preventive care', 'Prescription drugs', 'Specialist visits'],
         suitabilityScore: 95,
         description: 'Ideal for professionals with high income seeking comprehensive coverage.'
@@ -127,7 +148,9 @@ const InsuranceRecommender = () => {
         name: 'Family Shield Plan',
         provider: 'Harmony Health',
         monthlyPremium: '$340',
+        monthlyPremiumINR: '₹28,220',
         coverageAmount: '$800,000',
+        coverageAmountINR: '₹66,400,000',
         benefits: ['Family doctor visits', 'Maternity care', 'Child wellness', 'Emergency services', 'Dental basics'],
         suitabilityScore: 88,
         description: 'Perfect for families with children, including special coverage for maternity and pediatric care.'
@@ -137,7 +160,9 @@ const InsuranceRecommender = () => {
         name: 'Essential Coverage',
         provider: 'UniHealth',
         monthlyPremium: '$195',
+        monthlyPremiumINR: '₹16,185',
         coverageAmount: '$500,000',
+        coverageAmountINR: '₹41,500,000',
         benefits: ['Hospital care', 'Emergency services', 'Basic diagnostic tests', 'Limited specialist visits'],
         suitabilityScore: 75,
         description: 'Budget-friendly option that covers essential health needs without premium features.'
@@ -190,6 +215,10 @@ const InsuranceRecommender = () => {
     setStep('form');
     setRecommendedPlans([]);
     setApiResponse(null);
+  };
+
+  const toggleCurrency = () => {
+    setCurrency(prev => prev === 'USD' ? 'INR' : 'USD');
   };
 
   return (
@@ -408,9 +437,9 @@ const InsuranceRecommender = () => {
             <RecommendationResults 
               recommendedPlans={recommendedPlans}
               formData={{ age: formData.age, smokingStatus: formData.smokingStatus }}
-              currency={'USD'} 
+              currency={currency} 
               onResetForm={resetForm}
-              onToggleCurrency={() => {}}
+              onToggleCurrency={toggleCurrency}
             />
           )}
         </div>
