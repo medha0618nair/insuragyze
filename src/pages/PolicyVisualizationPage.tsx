@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, BarChart3, PieChart, LineChart } from 'lucide-react';
+import { ArrowLeft, BarChart3, PieChart, LineChart, Languages } from 'lucide-react';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { 
   ChartContainer, 
@@ -22,21 +22,144 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
+  Tooltip as RechartsTooltip,
+  Legend as RechartsLegend,
   ResponsiveContainer
 } from 'recharts';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { translateText } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
+
+// Custom type for translated content
+interface TranslatedContent {
+  title: string;
+  description: string;
+  keyPoints: string[];
+  keyInsights: {
+    title: string;
+    content: string;
+  }[];
+}
 
 const PolicyVisualizationPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const analysisResult = location.state?.analysisResult as PolicyAnalysisResult | null;
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const [translatedContent, setTranslatedContent] = useState<TranslatedContent | null>(null);
+
+  // Language options
+  const languages = [
+    { value: 'en', label: 'English' },
+    { value: 'es', label: 'Spanish' },
+    { value: 'fr', label: 'French' },
+    { value: 'de', label: 'German' },
+    { value: 'zh', label: 'Chinese' },
+    { value: 'ja', label: 'Japanese' },
+    { value: 'ko', label: 'Korean' },
+    { value: 'ar', label: 'Arabic' },
+    { value: 'ru', label: 'Russian' },
+    { value: 'pt', label: 'Portuguese' }
+  ];
 
   // Navigate back to analysis page if there's no data
-  if (!analysisResult) {
-    React.useEffect(() => {
+  useEffect(() => {
+    if (!analysisResult) {
       navigate('/tools/policy-analysis');
-    }, [navigate]);
+    }
+  }, [analysisResult, navigate]);
+
+  // Translate content when language changes
+  useEffect(() => {
+    if (selectedLanguage === 'en') {
+      setTranslatedContent(null);
+      return;
+    }
+    
+    const translateContent = async () => {
+      if (!analysisResult) return;
+      
+      setIsTranslating(true);
+      try {
+        // Prepare texts for translation
+        const textsToTranslate = [
+          "Policy Analysis Visualization", 
+          "Visual breakdown of your policy analysis results"
+        ];
+        
+        // Add key points
+        if (analysisResult.keyPoints) {
+          textsToTranslate.push(...analysisResult.keyPoints);
+        }
+        
+        // Add insight titles and content
+        textsToTranslate.push("Coverage Gaps");
+        textsToTranslate.push("Your policy has potential coverage gaps in personal property protection.");
+        textsToTranslate.push("Premium Assessment");
+        textsToTranslate.push("Your premium is within the expected range for your coverage level.");
+        textsToTranslate.push("Recommendations");
+        textsToTranslate.push("Consider increasing liability coverage for better protection.");
+        
+        // Call translation service
+        const translatedTexts = await translateText(textsToTranslate, selectedLanguage);
+        
+        // Update state with translated content
+        if (translatedTexts && translatedTexts.length >= 2) {
+          const translatedKeyPoints = analysisResult.keyPoints 
+            ? translatedTexts.slice(2, 2 + analysisResult.keyPoints.length)
+            : [];
+          
+          let startIdx = 2 + (analysisResult.keyPoints?.length || 0);
+          
+          setTranslatedContent({
+            title: translatedTexts[0],
+            description: translatedTexts[1],
+            keyPoints: translatedKeyPoints,
+            keyInsights: [
+              { 
+                title: translatedTexts[startIdx], 
+                content: translatedTexts[startIdx + 1] 
+              },
+              { 
+                title: translatedTexts[startIdx + 2], 
+                content: translatedTexts[startIdx + 3] 
+              },
+              { 
+                title: translatedTexts[startIdx + 4], 
+                content: translatedTexts[startIdx + 5] 
+              }
+            ]
+          });
+        }
+        
+        toast({
+          title: "Translation Complete",
+          description: "The content has been translated successfully.",
+        });
+      } catch (error) {
+        console.error("Translation error:", error);
+        toast({
+          title: "Translation Error",
+          description: "There was an error translating the content. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+    
+    translateContent();
+  }, [selectedLanguage, analysisResult, toast]);
+
+  if (!analysisResult) {
     return null;
   }
 
@@ -106,7 +229,7 @@ const PolicyVisualizationPage = () => {
       <Navbar />
       <div className="pt-28 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
             <Button 
               variant="outline" 
               onClick={() => navigate('/tools/policy-analysis')}
@@ -116,13 +239,37 @@ const PolicyVisualizationPage = () => {
               Back to Analysis
             </Button>
             
-            <div className="text-right">
-              <h1 className="text-2xl md:text-3xl font-bold text-white">
-                Policy Analysis Visualization
-              </h1>
-              <p className="text-gray-400">
-                Visual breakdown of your policy analysis results
-              </p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-black/40 p-2 rounded-md border border-gray-700">
+                <Languages size={18} className="text-insura-neon" />
+                <Select
+                  value={selectedLanguage}
+                  onValueChange={setSelectedLanguage}
+                >
+                  <SelectTrigger className="w-[180px] bg-transparent border-none focus:ring-0 focus:ring-offset-0">
+                    <SelectValue placeholder="Select Language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="text-right">
+                <h1 className="text-2xl md:text-3xl font-bold text-white">
+                  {translatedContent ? translatedContent.title : "Policy Analysis Visualization"}
+                </h1>
+                <p className="text-gray-400">
+                  {translatedContent ? translatedContent.description : "Visual breakdown of your policy analysis results"}
+                </p>
+                {isTranslating && (
+                  <span className="text-xs text-insura-neon animate-pulse">Translating...</span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -153,8 +300,8 @@ const PolicyVisualizationPage = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip content={customTooltip} />
-                    <Legend />
+                    <RechartsTooltip content={customTooltip} />
+                    <RechartsLegend />
                   </RechartsPieChart>
                 </ChartContainer>
               </div>
@@ -185,8 +332,8 @@ const PolicyVisualizationPage = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                     <XAxis dataKey="name" stroke="#888" />
                     <YAxis stroke="#888" />
-                    <Tooltip content={customTooltip} />
-                    <Legend />
+                    <RechartsTooltip content={customTooltip} />
+                    <RechartsLegend />
                     <Bar dataKey="current" name="Current Coverage" fill={CHART_CONFIG.bar1.color} barSize={30} />
                     <Bar dataKey="recommended" name="Recommended" fill={CHART_CONFIG.bar2.color} barSize={30} />
                   </RechartsBarChart>
@@ -219,8 +366,8 @@ const PolicyVisualizationPage = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                     <XAxis dataKey="month" stroke="#888" />
                     <YAxis stroke="#888" />
-                    <Tooltip content={customTooltip} />
-                    <Legend />
+                    <RechartsTooltip content={customTooltip} />
+                    <RechartsLegend />
                     <Line
                       type="monotone"
                       dataKey="risk"
@@ -240,7 +387,19 @@ const PolicyVisualizationPage = () => {
           <div className="cyber-card rounded-xl p-6 mb-8">
             <h2 className="text-xl font-semibold text-white mb-4">Key Insights</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {analysisResult.keyPoints?.map((point, index) => (
+              {translatedContent && translatedContent.keyPoints.length > 0 ? (
+                // Translated key points if available
+                translatedContent.keyPoints.map((point, index) => (
+                  <div 
+                    key={index} 
+                    className="p-4 rounded-lg bg-black/30 border border-insura-neon/20"
+                  >
+                    <h3 className="font-medium text-insura-neon mb-2">Key Point {index + 1}</h3>
+                    <p className="text-gray-300">{point}</p>
+                  </div>
+                ))
+              ) : analysisResult.keyPoints?.map((point, index) => (
+                // Original key points
                 <div 
                   key={index} 
                   className="p-4 rounded-lg bg-black/30 border border-insura-neon/20"
@@ -249,20 +408,38 @@ const PolicyVisualizationPage = () => {
                   <p className="text-gray-300">{point}</p>
                 </div>
               )) || (
-                <>
-                  <div className="p-4 rounded-lg bg-black/30 border border-insura-neon/20">
-                    <h3 className="font-medium text-insura-neon mb-2">Coverage Gaps</h3>
-                    <p className="text-gray-300">Your policy has potential coverage gaps in personal property protection.</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-black/30 border border-insura-purple/20">
-                    <h3 className="font-medium text-insura-purple mb-2">Premium Assessment</h3>
-                    <p className="text-gray-300">Your premium is within the expected range for your coverage level.</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-black/30 border border-green-500/20">
-                    <h3 className="font-medium text-green-400 mb-2">Recommendations</h3>
-                    <p className="text-gray-300">Consider increasing liability coverage for better protection.</p>
-                  </div>
-                </>
+                // Fallback insights if no key points available
+                translatedContent ? (
+                  <>
+                    <div className="p-4 rounded-lg bg-black/30 border border-insura-neon/20">
+                      <h3 className="font-medium text-insura-neon mb-2">{translatedContent.keyInsights[0].title}</h3>
+                      <p className="text-gray-300">{translatedContent.keyInsights[0].content}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-black/30 border border-insura-purple/20">
+                      <h3 className="font-medium text-insura-purple mb-2">{translatedContent.keyInsights[1].title}</h3>
+                      <p className="text-gray-300">{translatedContent.keyInsights[1].content}</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-black/30 border border-green-500/20">
+                      <h3 className="font-medium text-green-400 mb-2">{translatedContent.keyInsights[2].title}</h3>
+                      <p className="text-gray-300">{translatedContent.keyInsights[2].content}</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-4 rounded-lg bg-black/30 border border-insura-neon/20">
+                      <h3 className="font-medium text-insura-neon mb-2">Coverage Gaps</h3>
+                      <p className="text-gray-300">Your policy has potential coverage gaps in personal property protection.</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-black/30 border border-insura-purple/20">
+                      <h3 className="font-medium text-insura-purple mb-2">Premium Assessment</h3>
+                      <p className="text-gray-300">Your premium is within the expected range for your coverage level.</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-black/30 border border-green-500/20">
+                      <h3 className="font-medium text-green-400 mb-2">Recommendations</h3>
+                      <p className="text-gray-300">Consider increasing liability coverage for better protection.</p>
+                    </div>
+                  </>
+                )
               )}
             </div>
           </div>
@@ -272,7 +449,10 @@ const PolicyVisualizationPage = () => {
             <Button
               className="bg-gradient-to-r from-insura-neon to-insura-purple text-white px-8 py-2"
               onClick={() => {
-                alert("Report download functionality would be implemented here");
+                toast({
+                  title: "Report Download",
+                  description: "Report download functionality would be implemented here",
+                });
               }}
             >
               Download Full Visualization Report
