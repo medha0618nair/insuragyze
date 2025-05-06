@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -11,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { SliderRange, Shield, Lightbulb, ArrowRight, Check, Settings, DollarSign, TrendingUp } from 'lucide-react';
+import { Sliders, Shield, Lightbulb, ArrowRight, Check, Settings, DollarSign, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { translateText } from '@/services/utilityService';
@@ -230,7 +229,7 @@ const CoverageSimulatorPage = () => {
           {!showResults ? (
             <div className="cyber-card rounded-xl p-8 max-w-4xl mx-auto">
               <div className="flex items-center mb-6">
-                <SliderRange className="w-8 h-8 text-indigo-400 mr-3" />
+                <Sliders className="w-8 h-8 text-indigo-400 mr-3" />
                 <h2 className="text-2xl font-bold text-white">Insurance Needs Analysis</h2>
               </div>
               
@@ -500,7 +499,6 @@ const CoverageSimulatorPage = () => {
                           <Progress 
                             value={80} 
                             className="h-2 bg-gray-800" 
-                            indicatorClassName="bg-gradient-to-r from-indigo-400 to-insura-purple" 
                           />
                         </div>
                         <div className="flex items-start space-x-2 mt-4 bg-gray-800 p-3 rounded-lg">

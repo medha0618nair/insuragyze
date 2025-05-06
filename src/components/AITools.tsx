@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileSearch, Calculator, Maximize, MessageSquare, FileCheck, Shield, SliderRange } from 'lucide-react';
+import { FileSearch, Calculator, Maximize, MessageSquare, FileCheck, Shield, Sliders } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
 
 const AITools = () => {
@@ -33,7 +33,7 @@ const AITools = () => {
     {
       title: 'Coverage Simulator',
       description: 'Simulate how different life factors affect your insurance needs with our interactive tool.',
-      icon: <SliderRange className="w-10 h-10 text-indigo-400" />,
+      icon: <Sliders className="w-10 h-10 text-indigo-400" />,
       link: '/tools/coverage-simulator',
       color: 'from-indigo-500/20 to-indigo-600/20',
       buttonText: 'Simulate Coverage',
