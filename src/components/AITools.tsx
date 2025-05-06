@@ -1,10 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileSearch, Calculator, Maximize, MessageSquare, FileCheck, Shield, Sliders } from 'lucide-react';
+import { FileSearch, Calculator, Maximize, MessageSquare, FileCheck, Shield, Sliders, BadgeIndianRupee } from 'lucide-react';
 import { ButtonCustom } from './ui/button-custom';
+import { convertToINR } from '@/utils/currencyUtils';
 
 const AITools = () => {
+  const [currency, setCurrency] = useState<'USD' | 'INR'>('USD');
+  const exchangeRate = 83.5; // Fixed exchange rate for demo purposes
+  
+  const toggleCurrency = () => {
+    setCurrency(prev => prev === 'USD' ? 'INR' : 'USD');
+  };
+  
   const tools = [
     {
       title: 'Policy Analyzer',
@@ -13,6 +21,7 @@ const AITools = () => {
       link: '/tools/policy-analysis',
       color: 'from-blue-500/20 to-blue-600/20',
       buttonText: 'Analyze Policy',
+      price: '$99',
     },
     {
       title: 'Premium Calculator',
@@ -21,6 +30,7 @@ const AITools = () => {
       link: '/tools/premium-calculator',
       color: 'from-purple-500/20 to-purple-600/20',
       buttonText: 'Calculate Premium',
+      price: '$49',
     },
     {
       title: 'Coverage Optimizer',
@@ -29,6 +39,7 @@ const AITools = () => {
       link: '/tools/coverage-optimizer',
       color: 'from-green-500/20 to-green-600/20',
       buttonText: 'Optimize Coverage',
+      price: '$79',
     },
     {
       title: 'Coverage Simulator',
@@ -37,6 +48,7 @@ const AITools = () => {
       link: '/tools/coverage-simulator',
       color: 'from-indigo-500/20 to-indigo-600/20',
       buttonText: 'Simulate Coverage',
+      price: '$89',
     },
     {
       title: 'Claim Checker',
@@ -45,6 +57,7 @@ const AITools = () => {
       link: '/tools/claim-checker',
       color: 'from-yellow-500/20 to-yellow-600/20',
       buttonText: 'Check Claim',
+      price: '$69',
     },
     {
       title: 'Fraud Detection',
@@ -53,6 +66,7 @@ const AITools = () => {
       link: '/tools/fraud-detection',
       color: 'from-red-500/20 to-red-600/20',
       buttonText: 'Detect Fraud',
+      price: '$129',
     },
     {
       title: 'Insurance AI Chat',
@@ -61,6 +75,7 @@ const AITools = () => {
       link: '/chat-assistant',
       color: 'from-teal-500/20 to-teal-600/20',
       buttonText: 'Chat Now',
+      price: '$19',
     },
   ];
 
@@ -72,6 +87,18 @@ const AITools = () => {
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Leverage cutting-edge AI technology to simplify your insurance experience and make smarter decisions.
           </p>
+          
+          <div className="mt-6">
+            <ButtonCustom 
+              onClick={toggleCurrency}
+              className="text-sm px-3 py-1.5 bg-gradient-to-r from-slate-700 to-slate-800 border border-insura-neon/30"
+              variant="outline"
+              size="sm"
+            >
+              <BadgeIndianRupee className="w-4 h-4 mr-2" /> 
+              {currency === 'USD' ? 'Show in INR' : 'Show in USD'}
+            </ButtonCustom>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -86,7 +113,14 @@ const AITools = () => {
                 </div>
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2 text-white">{tool.title}</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-xl font-semibold text-white">{tool.title}</h3>
+                  {tool.price && (
+                    <span className="text-insura-neon font-medium">
+                      {currency === 'USD' ? tool.price : convertToINR(tool.price, exchangeRate)}
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-400 mb-6 h-20">{tool.description}</p>
                 <Link to={tool.link}>
                   <ButtonCustom 
