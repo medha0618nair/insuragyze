@@ -8,8 +8,6 @@ import { ArrowLeft, BarChart3, PieChart, LineChart } from 'lucide-react';
 import { PolicyAnalysisResult } from '@/services/policyService';
 import { 
   ChartContainer, 
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent
 } from '@/components/ui/chart';
@@ -24,6 +22,8 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  Tooltip,
+  Legend,
   ResponsiveContainer
 } from 'recharts';
 
@@ -85,6 +85,22 @@ const PolicyVisualizationPage = () => {
     line: { color: "#7E69AB" }
   };
 
+  const customTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-black/80 border border-gray-700 p-2 rounded-md text-xs">
+          <p className="text-white">{`${label || ''}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={`item-${index}`} className="text-white">
+              {`${entry.name}: ${entry.value}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-gray-900">
       <Navbar />
@@ -137,12 +153,8 @@ const PolicyVisualizationPage = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <ChartTooltip>
-                      <ChartTooltipContent />
-                    </ChartTooltip>
-                    <ChartLegend>
-                      <ChartLegendContent />
-                    </ChartLegend>
+                    <Tooltip content={customTooltip} />
+                    <Legend />
                   </RechartsPieChart>
                 </ChartContainer>
               </div>
@@ -173,12 +185,8 @@ const PolicyVisualizationPage = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                     <XAxis dataKey="name" stroke="#888" />
                     <YAxis stroke="#888" />
-                    <ChartTooltip>
-                      <ChartTooltipContent />
-                    </ChartTooltip>
-                    <ChartLegend>
-                      <ChartLegendContent />
-                    </ChartLegend>
+                    <Tooltip content={customTooltip} />
+                    <Legend />
                     <Bar dataKey="current" name="Current Coverage" fill={CHART_CONFIG.bar1.color} barSize={30} />
                     <Bar dataKey="recommended" name="Recommended" fill={CHART_CONFIG.bar2.color} barSize={30} />
                   </RechartsBarChart>
@@ -211,12 +219,8 @@ const PolicyVisualizationPage = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
                     <XAxis dataKey="month" stroke="#888" />
                     <YAxis stroke="#888" />
-                    <ChartTooltip>
-                      <ChartTooltipContent />
-                    </ChartTooltip>
-                    <ChartLegend>
-                      <ChartLegendContent />
-                    </ChartLegend>
+                    <Tooltip content={customTooltip} />
+                    <Legend />
                     <Line
                       type="monotone"
                       dataKey="risk"
