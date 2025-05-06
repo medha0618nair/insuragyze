@@ -12,6 +12,7 @@ import {
   Star
 } from 'lucide-react';
 import { toast } from 'sonner';
+import RecommendationResults from './insurance/RecommendationResultsComponent';
 import { 
   fetchRecommendationModel, 
   RecommendationModelParams, 
