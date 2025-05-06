@@ -21,6 +21,7 @@ import VerifyOTP from "./pages/VerifyOTP";
 import InsuranceRecommender from "./components/InsuranceRecommender";
 import { AuthProvider } from "@/hooks/use-auth";
 import PolicyVisualizationPage from "@/pages/PolicyVisualizationPage";
+import CoverageSimulatorPage from "@/pages/CoverageSimulatorPage";
 
 function App() {
   // Create a new QueryClient instance for each component render
@@ -44,6 +45,7 @@ function App() {
               <Route path="/tools/policy-visualization" element={<PolicyVisualizationPage />} />
               <Route path="/tools/premium-calculator" element={<PremiumCalculatorPage />} />
               <Route path="/tools/coverage-optimizer" element={<CoverageOptimizerPage />} />
+              <Route path="/tools/coverage-simulator" element={<CoverageSimulatorPage />} />
               <Route path="/chat-assistant" element={<ChatAssistantPage />} />
               <Route path="/tools/claim-checker" element={<ClaimCheckerPage />} />
               <Route path="/tools/fraud-detection" element={<FraudDetectionPage />} />
