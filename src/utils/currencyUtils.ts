@@ -1,8 +1,5 @@
 
-export const convertToINR = (usdAmount: string, exchangeRate: number): string => {
-  const amount = parseFloat(usdAmount.replace(/[$,]/g, ''));
-  if (isNaN(amount)) return usdAmount;
-  
-  const inrAmount = amount * exchangeRate;
-  return `₹${inrAmount.toLocaleString('en-IN')}`;
+// Convert a value from USD to INR based on exchange rate
+export const convertToINR = (amount: number, exchangeRate: number = 83): number => {
+  return amount * exchangeRate;
 };

@@ -35,19 +35,6 @@ interface FormData {
   preExistingConditions: boolean;
 }
 
-interface RecommendedPlan {
-  id: string;
-  name: string;
-  provider: string;
-  monthlyPremium: string;
-  monthlyPremiumINR: string;
-  coverageAmount: string;
-  coverageAmountINR: string;
-  benefits: string[];
-  suitabilityScore: number;
-  description: string;
-}
-
 const InsuranceRecommender = () => {
   const [step, setStep] = useState<'form' | 'results'>('form');
   const [isLoading, setIsLoading] = useState(false);
@@ -110,9 +97,10 @@ const InsuranceRecommender = () => {
       const formattedMonthlyPremium = `$${monthlyPremium.toFixed(2)}`;
       const formattedCoverageAmount = `$${coverageAmount.toLocaleString()}`;
       
-      // Create INR versions with currency conversion
-      const monthlyPremiumINR = `₹${convertToINR(monthlyPremium).toLocaleString()}`;
-      const coverageAmountINR = `₹${convertToINR(coverageAmount).toLocaleString()}`;
+      // Create INR versions with currency conversion - fixing the convertToINR calls
+      // by passing 83 as the exchange rate (USD to INR)
+      const monthlyPremiumINR = `₹${convertToINR(monthlyPremium, 83).toLocaleString()}`;
+      const coverageAmountINR = `₹${convertToINR(coverageAmount, 83).toLocaleString()}`;
       
       return {
         id: `plan-${index + 1}`,
