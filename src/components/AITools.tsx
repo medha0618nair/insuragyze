@@ -13,6 +13,12 @@ const AITools = () => {
     setCurrency(prev => prev === 'USD' ? 'INR' : 'USD');
   };
   
+  // Helper function to extract numeric value from price string
+  const extractPriceValue = (price: string): number => {
+    // Remove the dollar sign and any commas, then parse to number
+    return parseFloat(price.replace(/[$,]/g, ''));
+  };
+  
   const tools = [
     {
       title: 'Policy Analyzer',
@@ -117,7 +123,9 @@ const AITools = () => {
                   <h3 className="text-xl font-semibold text-white">{tool.title}</h3>
                   {tool.price && (
                     <span className="text-insura-neon font-medium">
-                      {currency === 'USD' ? tool.price : convertToINR(tool.price, exchangeRate)}
+                      {currency === 'USD' 
+                        ? tool.price 
+                        : `₹${convertToINR(extractPriceValue(tool.price), exchangeRate).toLocaleString()}`}
                     </span>
                   )}
                 </div>
